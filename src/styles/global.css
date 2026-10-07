@@ -1,0 +1,446 @@
+/* ==========================================================================
+   Sumi — global styles
+   Colours are CSS custom properties so the whole palette can be re-themed
+   from one place. The accent colour is injected from site.config.ts.
+   ========================================================================== */
+
+:root {
+  --bg: #f3f2ee;
+  --surface: #ffffff;
+  --surface-2: #f8f7f4;
+  --text: #24221f;
+  --text-soft: #4a4742;
+  --muted: #8a867f;
+  --border: #e6e3dc;
+  --ink: #1d1c1a;
+  --on-ink: #f5f3ee;
+  --code-bg: #f6f5f1;
+  --mark: #fdf1c7;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.04);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Songti SC', 'Noto Serif CJK SC', serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --radius: 6px;
+  --sidebar-width: 264px;
+  --gap: 1.25rem;
+  --content-max: 1180px;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #121211;
+  --surface: #1b1a19;
+  --surface-2: #222120;
+  --text: #e7e4de;
+  --text-soft: #c4c0b8;
+  --muted: #8f8b84;
+  --border: #2d2b29;
+  --ink: #0b0b0a;
+  --on-ink: #ece9e2;
+  --code-bg: #161514;
+  --mark: #4a3f17;
+  --shadow: none;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 1.5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.75;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.icon {
+  flex-shrink: 0;
+  vertical-align: -0.2em;
+}
+
+/* ---------- Shared building blocks ---------- */
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.page-card {
+  padding: 2.5rem clamp(1.25rem, 5vw, 3rem);
+}
+
+.page-title {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.page-subtitle {
+  margin: 0 0 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  border: 1.5px solid var(--text);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.875rem;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.btn:hover {
+  background: var(--text);
+  color: var(--surface);
+  text-decoration: none;
+}
+
+/* ---------- Prose (rendered Markdown) ---------- */
+
+.prose {
+  font-size: 1.0625rem;
+  color: var(--text);
+  overflow-wrap: break-word;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose p,
+.prose ul,
+.prose ol,
+.prose blockquote,
+.prose pre,
+.prose table,
+.prose figure {
+  margin: 0 0 1.25em;
+}
+
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  position: relative;
+  margin: 2em 0 0.75em;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.prose h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border);
+}
+
+.prose h3 {
+  font-size: 1.25em;
+}
+
+.prose h4 {
+  font-size: 1.1em;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5em;
+}
+
+.prose li + li {
+  margin-top: 0.3em;
+}
+
+.prose li > ul,
+.prose li > ol {
+  margin: 0.3em 0 0;
+}
+
+.prose blockquote {
+  padding: 0.25em 1.25em;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  color: var(--text-soft);
+}
+
+.prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.prose hr {
+  margin: 2.5em auto;
+  width: 40%;
+  border: 0;
+  border-top: 1px dashed var(--border);
+}
+
+.prose img {
+  display: block;
+  margin: 0 auto;
+  border-radius: var(--radius);
+}
+
+.prose figcaption {
+  margin-top: 0.5em;
+  text-align: center;
+  font-size: 0.875em;
+  color: var(--muted);
+}
+
+.prose mark {
+  background: var(--mark);
+  color: inherit;
+  padding: 0 0.15em;
+}
+
+.prose kbd {
+  padding: 0.1em 0.45em;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--surface-2);
+}
+
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.prose th,
+.prose td {
+  padding: 0.5em 0.9em;
+  border: 1px solid var(--border);
+}
+
+.prose th {
+  background: var(--surface-2);
+  font-weight: 600;
+  text-align: left;
+}
+
+.prose :not(pre) > code {
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  color: var(--accent);
+}
+
+.prose a code {
+  color: inherit;
+}
+
+.prose .footnotes {
+  font-size: 0.9em;
+  color: var(--text-soft);
+}
+
+.prose .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5em 0;
+}
+
+/* ---------- Code blocks (Shiki dual themes) ---------- */
+
+.prose pre {
+  position: relative;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+
+.prose pre.astro-code {
+  background-color: var(--code-bg);
+}
+
+:root[data-theme='dark'] .astro-code,
+:root[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+:root[data-theme='dark'] .prose pre.astro-code {
+  background-color: var(--code-bg);
+}
+
+.astro-code span {
+  background-color: transparent !important;
+}
+
+.code-block {
+  position: relative;
+}
+
+.code-block[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 0.4rem;
+  right: 4.25rem;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.4rem;
+  z-index: 1;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.code-block:hover .copy-btn,
+.copy-btn:focus-visible,
+.copy-btn[data-copied] {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .copy-btn {
+    opacity: 1;
+  }
+}
+
+/* Heading anchor links added by the post page script. */
+.heading-anchor {
+  margin-left: 0.35em;
+  color: var(--muted);
+  font-weight: 400;
+  opacity: 0;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.prose :is(h2, h3, h4):hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+  text-decoration: none;
+}

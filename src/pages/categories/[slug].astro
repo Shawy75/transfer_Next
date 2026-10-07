@@ -1,0 +1,28 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostTimeline from '@/components/PostTimeline.astro';
+import { getCategories, getPosts, type Term } from '@/utils/posts';
+
+export const getStaticPaths = (async () => {
+  const categories = getCategories(await getPosts());
+  return categories.map((term) => ({ params: { slug: term.slug }, props: { term } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  term: Term;
+}
+
+const { term } = Astro.props;
+const t = useStrings(SITE.locale);
+---
+
+<BaseLayout title={t.categoryTitle(term.name)}>
+  <section class="card page-card">
+    <h1 class="page-title">{term.name}</h1>
+    <p class="page-subtitle">{t.categories} · {t.postCount(term.posts.length)}</p>
+    <PostTimeline posts={term.posts} />
+  </section>
+</BaseLayout>

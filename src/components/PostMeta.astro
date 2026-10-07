@@ -1,0 +1,79 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import { formatDate } from '@/utils/date';
+import { countWords, readingTime, slugify, type Post } from '@/utils/posts';
+import Icon from './Icon.astro';
+
+interface Props {
+  post: Post;
+  /** Show the updated date and word count (used on the post page). */
+  detailed?: boolean;
+}
+
+const { post, detailed = false } = Astro.props;
+const { date, updated, category } = post.data;
+const t = useStrings(SITE.locale);
+const body = post.body ?? '';
+const showUpdated = detailed && updated && updated.toDateString() !== date.toDateString();
+---
+
+<ul class="post-meta">
+  <li>
+    <Icon name="calendar" size={14} />
+    <span class="sr-only">{t.postedOn}</span>
+    <time datetime={date.toISOString()}>{formatDate(date)}</time>
+  </li>
+  {
+    showUpdated && (
+      <li>
+        <span>{t.updatedOn}</span>
+        <time datetime={updated.toISOString()}>{formatDate(updated)}</time>
+      </li>
+    )
+  }
+  {
+    category && (
+      <li>
+        <Icon name="folder" size={14} />
+        <span class="sr-only">{t.inCategory}</span>
+        <a href={`/categories/${slugify(category)}/`}>{category}</a>
+      </li>
+    )
+  }
+  {detailed && <li>{t.words(countWords(body))}</li>}
+  <li>
+    <Icon name="clock" size={14} />
+    {t.minRead(readingTime(body))}
+  </li>
+</ul>
+
+<style>
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+    font-size: 0.8125rem;
+  }
+
+  .post-meta li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .post-meta a {
+    color: inherit;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-meta a:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+</style>

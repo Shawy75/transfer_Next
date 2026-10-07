@@ -1,0 +1,41 @@
+---
+title: Why a Static Blog Still Makes Sense
+description: Fast pages, no servers to patch, and hosting that costs nothing — the quiet case for publishing plain HTML.
+date: 2025-11-12
+category: Essays
+tags: [Astro, Web, Performance]
+---
+
+export const Callout = ({ children }) => (
+  <aside style="padding: 1rem 1.25rem; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border);">
+    {children}
+  </aside>
+);
+
+Every page on this site is a plain HTML file, generated once when the site is built.
+There is no database and no server-side code running when you read it.
+
+## Speed
+
+A static page is the fastest thing a web server can send. There is nothing to compute, so
+it can be cached on a CDN close to every reader.
+
+## Nothing to maintain
+
+No CMS to update, no plugins with security advisories, no server to keep alive. If the
+host disappears tomorrow, the `dist/` folder runs anywhere else, unchanged.
+
+## Free hosting
+
+Netlify, Vercel, Cloudflare Pages and GitHub Pages all host static sites for free at
+blog-sized traffic.
+
+<Callout>
+  This post is written in **MDX**, so it can use components — like this callout — right
+  inside the Markdown.
+</Callout>
+
+## What you give up
+
+Comments, analytics and newsletter sign-ups need a third-party service. They plug in with
+a small script, and you choose which ones — if any — your readers load.

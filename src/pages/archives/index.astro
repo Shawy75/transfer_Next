@@ -1,0 +1,18 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostTimeline from '@/components/PostTimeline.astro';
+import { getPosts } from '@/utils/posts';
+
+const t = useStrings(SITE.locale);
+const posts = await getPosts();
+---
+
+<BaseLayout title={t.archives}>
+  <section class="card page-card">
+    <h1 class="page-title">{t.archives}</h1>
+    <p class="page-subtitle">{t.archiveSummary(posts.length)}</p>
+    <PostTimeline posts={posts} />
+  </section>
+</BaseLayout>

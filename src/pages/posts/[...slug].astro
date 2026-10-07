@@ -1,0 +1,336 @@
+---
+import 'katex/dist/katex.min.css';
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostMeta from '@/components/PostMeta.astro';
+import TableOfContents from '@/components/TableOfContents.astro';
+import Icon from '@/components/Icon.astro';
+import { getPosts, postUrl, slugify, type Post } from '@/utils/posts';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    // Posts are sorted newest first, so the "next" (newer) post is the previous array item.
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+  newer?: Post;
+  older?: Post;
+}
+
+const { post, newer, older } = Astro.props;
+const { Content, headings } = await render(post);
+const t = useStrings(SITE.locale);
+const { title, description, date, updated, tags, image } = post.data;
+const tocHeadings = SITE.toc.enable && post.data.toc ? headings : [];
+const hasInlineToc = tocHeadings.some((h) => h.depth >= SITE.toc.minDepth && h.depth <= SITE.toc.maxDepth);
+const shareImage = typeof image === 'string' ? image : image?.src;
+const permalink = new URL(postUrl(post), Astro.site ?? SITE.url).href;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={shareImage}
+  type="article"
+  publishedTime={date}
+  modifiedTime={updated}
+  tags={tags}
+  headings={tocHeadings}
+>
+  <article class="post card">
+    <header class="post-header">
+      <h1 class="post-title" data-pagefind-meta="title">{title}</h1>
+      <PostMeta post={post} detailed />
+    </header>
+
+    {
+      hasInlineToc && (
+        <details class="inline-toc">
+          <summary>{t.toc}</summary>
+          <TableOfContents headings={tocHeadings} />
+        </details>
+      )
+    }
+
+    <div class="prose" data-pagefind-body data-copy-label={t.copy} data-copied-label={t.copied}>
+      <Content />
+    </div>
+
+    <footer class="post-footer">
+      {
+        tags.length > 0 && (
+          <ul class="post-tags">
+            {tags.map((tag) => (
+              <li>
+                <a href={`/tags/${slugify(tag)}/`} rel="tag">
+                  # {tag}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      {
+        SITE.postLicense && (
+          <dl class="post-license">
+            <div>
+              <dt>{t.author}</dt>
+              <dd>{SITE.author.name}</dd>
+            </div>
+            <div>
+              <dt>{t.link}</dt>
+              <dd>
+                <a href={permalink}>{permalink}</a>
+              </dd>
+            </div>
+            <div>
+              <dt>{t.license}</dt>
+              <dd>
+                {t.licenseText}{' '}
+                <a href={SITE.postLicense.url} rel="license noopener" target="_blank">
+                  {SITE.postLicense.name}
+                </a>
+              </dd>
+            </div>
+          </dl>
+        )
+      }
+
+      {
+        (newer || older) && (
+          <nav class="post-nav" aria-label="Post navigation">
+            {older ? (
+              <a class="older" href={postUrl(older)} rel="prev">
+                <span class="label">
+                  <Icon name="arrowLeft" size={14} /> {t.prevPost}
+                </span>
+                <span class="title">{older.data.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+            {newer ? (
+              <a class="newer" href={postUrl(newer)} rel="next">
+                <span class="label">
+                  {t.nextPost} <Icon name="arrowRight" size={14} />
+                </span>
+                <span class="title">{newer.data.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+          </nav>
+        )
+      }
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .post {
+    padding: 2.5rem clamp(1.25rem, 5vw, 3rem);
+  }
+
+  .post-header {
+    margin-bottom: 2.25rem;
+  }
+
+  .post-title {
+    margin: 0 0 0.75rem;
+    font-family: var(--font-serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .inline-toc {
+    display: none;
+    margin: 0 0 2rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+
+  .inline-toc summary {
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .inline-toc[open] summary {
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 991px) {
+    .inline-toc {
+      display: block;
+    }
+  }
+
+  .post-footer {
+    margin-top: 3rem;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0 0 2rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post-tags a {
+    display: inline-block;
+    padding: 0.15rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-soft);
+    font-size: 0.85rem;
+  }
+
+  .post-tags a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .post-license {
+    margin: 0 0 2rem;
+    padding: 1rem 1.25rem;
+    border-left: 3px solid var(--accent);
+    background: var(--surface-2);
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  .post-license div {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .post-license dt {
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+
+  .post-license dt::after {
+    content: ':';
+  }
+
+  .post-license dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--text-soft);
+  }
+
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .post-nav a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    color: var(--text);
+  }
+
+  .post-nav a:hover {
+    text-decoration: none;
+  }
+
+  .post-nav a:hover .title {
+    color: var(--accent);
+  }
+
+  .post-nav .newer {
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  .post-nav .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .post-nav .title {
+    font-weight: 500;
+    line-height: 1.5;
+    transition: color 0.2s;
+  }
+
+  @media (max-width: 560px) {
+    .post-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .post-nav .newer {
+      text-align: left;
+      align-items: flex-start;
+    }
+  }
+</style>
+
+<script>
+  const prose = document.querySelector<HTMLElement>('.prose');
+  const copyLabel = prose?.dataset.copyLabel ?? 'Copy';
+  const copiedLabel = prose?.dataset.copiedLabel ?? 'Copied';
+
+  // Copy buttons and language labels on code blocks.
+  for (const pre of prose?.querySelectorAll<HTMLPreElement>('pre.astro-code') ?? []) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    const lang = pre.dataset.language;
+    if (lang && lang !== 'plaintext') wrapper.dataset.lang = lang;
+    pre.replaceWith(wrapper);
+    wrapper.append(pre);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy-btn';
+    button.textContent = copyLabel;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pre.innerText);
+        button.textContent = copiedLabel;
+        button.dataset.copied = '';
+        setTimeout(() => {
+          button.textContent = copyLabel;
+          delete button.dataset.copied;
+        }, 1500);
+      } catch {
+        /* clipboard blocked — leave the button unchanged */
+      }
+    });
+    wrapper.append(button);
+  }
+
+  // Permalink anchors on headings.
+  for (const heading of prose?.querySelectorAll<HTMLElement>('h2[id], h3[id], h4[id]') ?? []) {
+    const anchor = document.createElement('a');
+    anchor.className = 'heading-anchor';
+    anchor.href = `#${heading.id}`;
+    anchor.textContent = '#';
+    anchor.setAttribute('aria-label', `Link to “${heading.textContent}”`);
+    heading.append(anchor);
+  }
+</script>

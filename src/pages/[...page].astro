@@ -1,0 +1,27 @@
+---
+import type { GetStaticPaths, Page } from 'astro';
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostCard from '@/components/PostCard.astro';
+import Pagination from '@/components/Pagination.astro';
+import { getPosts, sortForHome, type Post } from '@/utils/posts';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = sortForHome(await getPosts());
+  return paginate(posts, { pageSize: SITE.postsPerPage });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page<Post>;
+}
+
+const { page } = Astro.props;
+const t = useStrings(SITE.locale);
+const title = page.currentPage > 1 ? t.page(page.currentPage, page.lastPage) : undefined;
+---
+
+<BaseLayout title={title}>
+  {page.data.map((post) => <PostCard post={post} />)}
+  <Pagination current={page.currentPage} last={page.lastPage} href={(n) => (n === 1 ? '/' : `/${n}/`)} />
+</BaseLayout>

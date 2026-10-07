@@ -1,0 +1,60 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPosts, getTags } from '@/utils/posts';
+
+const t = useStrings(SITE.locale);
+const tags = getTags(await getPosts()).sort((a, b) => a.name.localeCompare(b.name));
+const max = Math.max(1, ...tags.map((tag) => tag.posts.length));
+// Scale font size between 0.9rem and 1.6rem by how often the tag is used.
+const size = (n: number) => (0.9 + (0.7 * (n - 1)) / Math.max(1, max - 1)).toFixed(2);
+---
+
+<BaseLayout title={t.tags}>
+  <section class="card page-card">
+    <h1 class="page-title">{t.tags}</h1>
+    <p class="page-subtitle">{t.tagCount(tags.length)}</p>
+    <ul class="tag-cloud">
+      {
+        tags.map((tag) => (
+          <li>
+            <a href={`/tags/${tag.slug}/`} style={`font-size:${size(tag.posts.length)}rem`}>
+              {tag.name}
+              <sup>{tag.posts.length}</sup>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.5rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tag-cloud a {
+    color: var(--text-soft);
+    line-height: 1.6;
+  }
+
+  .tag-cloud a:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  sup {
+    margin-left: 0.1rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+</style>

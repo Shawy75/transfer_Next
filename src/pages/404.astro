@@ -1,0 +1,34 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/Icon.astro';
+
+const t = useStrings(SITE.locale);
+---
+
+<BaseLayout title={t.notFoundTitle} noindex>
+  <section class="card page-card not-found">
+    <p class="code">404</p>
+    <h1 class="page-title">{t.notFoundTitle}</h1>
+    <p class="page-subtitle">{t.notFoundText}</p>
+    <a class="btn" href="/"><Icon name="home" size={14} /> {t.backHome}</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    text-align: center;
+    padding-block: 4rem;
+  }
+
+  .code {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 5rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--accent);
+    opacity: 0.85;
+  }
+</style>

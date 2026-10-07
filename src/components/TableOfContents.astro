@@ -1,0 +1,90 @@
+---
+import type { MarkdownHeading } from 'astro';
+import { SITE } from '@/site.config';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+interface Node extends MarkdownHeading {
+  children: Node[];
+}
+
+const { minDepth, maxDepth } = SITE.toc;
+const headings = Astro.props.headings.filter((h) => h.depth >= minDepth && h.depth <= maxDepth);
+
+// Build a nested tree so the list mirrors the document outline.
+const root: Node[] = [];
+const stack: Node[] = [];
+for (const heading of headings) {
+  const node: Node = { ...heading, children: [] };
+  while (stack.length && stack[stack.length - 1].depth >= node.depth) stack.pop();
+  (stack.length ? stack[stack.length - 1].children : root).push(node);
+  stack.push(node);
+}
+
+let counter: number[] = [];
+function number(depth: number): string {
+  const level = depth - minDepth;
+  counter = counter.slice(0, level + 1);
+  while (counter.length <= level) counter.push(0);
+  counter[level] += 1;
+  return counter.join('.');
+}
+
+function render(nodes: Node[]): string {
+  return `<ol>${nodes
+    .map((n) => {
+      const num = number(n.depth);
+      const text = n.text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+      return `<li><a href="#${encodeURIComponent(n.slug)}" data-toc-link="${n.slug}"><span class="toc-num">${num}</span> <span class="toc-text">${text}</span></a>${n.children.length ? render(n.children) : ''}</li>`;
+    })
+    .join('')}</ol>`;
+}
+---
+
+{headings.length > 0 && <nav class="toc" aria-label="Table of contents" set:html={render(root)} />}
+
+<style>
+  .toc {
+    position: relative;
+    max-height: calc(100vh - 12rem);
+    overflow-y: auto;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    overscroll-behavior: contain;
+  }
+
+  .toc :global(ol) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc :global(ol ol) {
+    padding-left: 1rem;
+  }
+
+  .toc :global(a) {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--text-soft);
+  }
+
+  .toc :global(a:hover) {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .toc :global(a.active) {
+    color: var(--accent);
+    background: var(--surface-2);
+    font-weight: 500;
+  }
+
+  .toc :global(.toc-num) {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

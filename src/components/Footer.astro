@@ -1,0 +1,35 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+
+const t = useStrings(SITE.locale);
+const year = new Date().getFullYear();
+const range = SITE.since && SITE.since < year ? `${SITE.since}–${year}` : `${year}`;
+---
+
+<footer class="site-footer">
+  <p>© {range} {SITE.author.name}</p>
+  <p class="credits">
+    {t.poweredBy} <a href="https://astro.build" rel="noopener" target="_blank">Astro</a>{' '}
+    <span aria-hidden="true">·</span>{' '}
+    {t.themeBy} <a href="https://github.com/Shawy75/transfer_Next" rel="noopener" target="_blank">Sumi</a>
+  </p>
+</footer>
+
+<style>
+  .site-footer {
+    padding: 2rem 1rem 2.5rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+
+  .site-footer p {
+    margin: 0;
+  }
+
+  .site-footer a {
+    color: var(--text-soft);
+  }
+</style>

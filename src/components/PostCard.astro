@@ -1,0 +1,96 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import { excerpt, postUrl, type Post } from '@/utils/posts';
+import PostMeta from './PostMeta.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const t = useStrings(SITE.locale);
+const url = postUrl(post);
+---
+
+<article class="post-card card">
+  <header>
+    {post.data.pinned && (
+      <span class="pinned" title="Pinned">
+        <Icon name="pin" size={14} label="Pinned" />
+      </span>
+    )}
+    <h2 class="post-title">
+      <a href={url}>{post.data.title}</a>
+      {post.data.draft && <span class="draft">draft</span>}
+    </h2>
+    <PostMeta post={post} />
+  </header>
+  <p class="excerpt">{excerpt(post)}</p>
+  <div class="more">
+    <a class="btn" href={url}>{t.readMore} <Icon name="arrowRight" size={14} /></a>
+  </div>
+</article>
+
+<style>
+  .post-card {
+    position: relative;
+    padding: 2.25rem clamp(1.25rem, 5vw, 3rem);
+  }
+
+  .post-card + :global(.post-card) {
+    margin-top: var(--gap);
+  }
+
+  .pinned {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: var(--accent);
+  }
+
+  .post-title {
+    margin: 0 0 0.6rem;
+    font-family: var(--font-serif);
+    font-size: clamp(1.35rem, 2.6vw, 1.65rem);
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  .post-title a {
+    color: var(--text);
+    background-image: linear-gradient(var(--accent), var(--accent));
+    background-size: 0 1.5px;
+    background-position: 50% 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.25s;
+  }
+
+  .post-title a:hover {
+    text-decoration: none;
+    background-size: 100% 1.5px;
+  }
+
+  .draft {
+    margin-left: 0.5rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: var(--mark);
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+
+  .excerpt {
+    margin: 1.5rem 0;
+    color: var(--text-soft);
+    line-height: 1.85;
+  }
+
+  .more {
+    text-align: center;
+  }
+</style>

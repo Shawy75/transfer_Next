@@ -1,0 +1,121 @@
+---
+import { formatMonthDay } from '@/utils/date';
+import { groupByYear, postUrl, type Post } from '@/utils/posts';
+
+interface Props {
+  posts: Post[];
+}
+
+const groups = groupByYear(Astro.props.posts);
+---
+
+<div class="timeline">
+  {
+    groups.map(([year, posts]) => (
+      <section>
+        <h2 class="year">
+          {year}
+          <span class="count">{posts.length}</span>
+        </h2>
+        <ol>
+          {posts.map((post) => (
+            <li>
+              <time datetime={post.data.date.toISOString()}>{formatMonthDay(post.data.date)}</time>
+              <a href={postUrl(post)}>{post.data.title}</a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .timeline {
+    position: relative;
+    margin-left: 0.5rem;
+    padding-left: 1.5rem;
+    border-left: 2px solid var(--border);
+  }
+
+  section + section {
+    margin-top: 1.75rem;
+  }
+
+  .year {
+    position: relative;
+    margin: 0 0 0.75rem;
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+
+  .year::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.5rem - 7px);
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    margin-top: -6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--surface);
+  }
+
+  .count {
+    margin-left: 0.4rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  li::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.5rem - 4px);
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin-top: -3px;
+    border-radius: 50%;
+    background: var(--muted);
+    box-shadow: 0 0 0 3px var(--surface);
+    transition: background 0.2s;
+  }
+
+  li:hover::before {
+    background: var(--accent);
+  }
+
+  time {
+    flex-shrink: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  li a {
+    color: var(--text);
+  }
+
+  li a:hover {
+    color: var(--accent);
+  }
+</style>

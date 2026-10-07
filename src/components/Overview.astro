@@ -1,0 +1,156 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import { getCategories, getPosts, getTags } from '@/utils/posts';
+import Icon from './Icon.astro';
+
+const t = useStrings(SITE.locale);
+const posts = await getPosts();
+const stats = [
+  { label: t.posts, value: posts.length, href: '/archives/' },
+  { label: t.categories, value: getCategories(posts).length, href: '/categories/' },
+  { label: t.tags, value: getTags(posts).length, href: '/tags/' },
+];
+---
+
+<div class="overview">
+  <img class="avatar" src={SITE.author.avatar} alt={SITE.author.name} width="96" height="96" loading="lazy" />
+  <p class="author-name">{SITE.author.name}</p>
+  <p class="author-bio">{SITE.author.bio}</p>
+
+  <ul class="stats">
+    {
+      stats.map((s) => (
+        <li>
+          <a href={s.href}>
+            <span class="stat-value">{s.value}</span>
+            <span class="stat-label">{s.label}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  {
+    SITE.social.length > 0 && (
+      <ul class="social">
+        {SITE.social.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              title={link.name}
+              aria-label={link.name}
+              rel={link.href.startsWith('http') ? 'me noopener' : undefined}
+              target={link.href.startsWith('http') ? '_blank' : undefined}
+            >
+              <Icon name={link.icon} size={18} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</div>
+
+<style>
+  .overview {
+    text-align: center;
+  }
+
+  .avatar {
+    display: block;
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 0.75rem;
+    border-radius: 50%;
+    border: 3px solid var(--surface-2);
+    box-shadow: 0 0 0 1px var(--border);
+    object-fit: cover;
+    transition: transform 0.6s;
+  }
+
+  .avatar:hover {
+    transform: rotate(360deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .avatar:hover {
+      transform: none;
+    }
+  }
+
+  .author-name {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  .author-bio {
+    margin: 0.25rem 0 1rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .stats {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .stats li + li {
+    border-left: 1px solid var(--border);
+  }
+
+  .stats a {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .stats a:hover {
+    text-decoration: none;
+    color: var(--accent);
+  }
+
+  .stat-value {
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .social {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .social a {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    color: var(--muted);
+    transition:
+      color 0.2s,
+      background 0.2s;
+  }
+
+  .social a:hover {
+    color: var(--accent);
+    background: var(--surface-2);
+  }
+</style>

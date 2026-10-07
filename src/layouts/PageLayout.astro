@@ -1,0 +1,23 @@
+---
+/**
+ * Layout for standalone Markdown pages such as src/pages/about.md.
+ * Use it with `layout: ../layouts/PageLayout.astro` in the page's frontmatter.
+ */
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  frontmatter: { title: string; description?: string };
+}
+
+const { title, description } = Astro.props.frontmatter;
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="card page-card">
+    <h1 class="page-title">{title}</h1>
+    {description && <p class="page-subtitle">{description}</p>}
+    <div class="prose">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>
