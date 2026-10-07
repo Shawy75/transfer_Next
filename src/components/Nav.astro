@@ -120,4 +120,6 @@ function isActive(href: string): boolean {
     });
   }
   sync();
+  // Keep labels right if something else changes the scheme (another tab, an embedding page).
+  new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 </script>

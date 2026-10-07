@@ -3,7 +3,7 @@ import type { GetStaticPaths, Page } from 'astro';
 import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import ItemBox from '@/components/ItemBox.astro';
+import ItemBar from '@/components/ItemBar.astro';
 import PostRow from '@/components/PostRow.astro';
 import Pagination from '@/components/Pagination.astro';
 import { getPosts, sortForHome, type Post } from '@/utils/posts';
@@ -25,7 +25,7 @@ const title = first ? undefined : t.page(page.currentPage, page.lastPage);
 ---
 
 <BaseLayout title={title} home={first} wide>
-  {first && <ItemBox />}
+  {first && <ItemBar />}
   <section class="latest wrap" aria-labelledby="latest-title">
     <div class="section-head">
       {first ? <h2 id="latest-title">{t.latest}</h2> : <h1 id="latest-title">{title}</h1>}
@@ -41,7 +41,7 @@ const title = first ? undefined : t.page(page.currentPage, page.lastPage);
 
 <style>
   .latest {
-    padding-top: 56px;
+    padding-top: 44px;
   }
 
   .latest h1 {

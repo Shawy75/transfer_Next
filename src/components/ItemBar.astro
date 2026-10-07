@@ -1,0 +1,399 @@
+---
+/**
+ * The item bar: ten slots, one per item icon, standing for the blog's sections.
+ * Every count and stat is computed from the posts at build time. Hover or focus a slot
+ * to see its card; click to open the section. The lantern switches the colour scheme.
+ */
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import { formatDate } from '@/utils/date';
+import { withBase } from '@/utils/url';
+import {
+  codeBlockCount,
+  countWords,
+  getCategories,
+  getPosts,
+  getTags,
+  groupByYear,
+  readingBucket,
+  type ReadingBucket,
+} from '@/utils/posts';
+import { itemIconSvg, type ItemIconName, type Tier } from './item-icons';
+
+const t = useStrings(SITE.locale);
+const s = t.stats;
+const v = t.statValues;
+const posts = await getPosts();
+const categories = getCategories(posts);
+const tags = getTags(posts);
+const years = groupByYear(posts);
+const busiest = [...years].sort((a, b) => b[1].length - a[1].length)[0];
+const totalWords = posts.reduce((n, p) => n + countWords(p.body ?? ''), 0);
+const fmt = (n: number) => n.toLocaleString(SITE.locale);
+const inBucket = (b: ReadingBucket) => posts.filter((p) => readingBucket(p) === b).length;
+const codeCounts = posts.map(codeBlockCount);
+const codeTotal = codeCounts.reduce((a, b) => a + b, 0);
+const contact = SITE.social.find((l) => !l.href.endsWith('.xml'));
+
+interface Item {
+  key: string;
+  icon: ItemIconName;
+  tier: Tier;
+  name: string;
+  kind: string;
+  text: string;
+  qty: number | null;
+  stats: [string, string][];
+  href?: string;
+  lantern?: boolean;
+}
+
+const items: Item[] = [
+  {
+    key: 'articles', icon: 'scroll', tier: 0, ...t.items.articles, qty: posts.length,
+    stats: [[s.latest, posts[0] ? formatDate(posts[0].data.date) : '—'], [s.words, fmt(totalWords)]],
+    href: '/archives/',
+  },
+  {
+    key: 'archive', icon: 'chest', tier: 2, ...t.items.archive, qty: years.length,
+    stats: [
+      [s.years, years.length ? `${years[years.length - 1][0]} – ${years[0][0]}` : '—'],
+      [s.busiest, busiest ? `${busiest[0]} · ${v.postsN(busiest[1].length)}` : '—'],
+    ],
+    href: '/archives/',
+  },
+  {
+    key: 'categories', icon: 'pouch', tier: 1, ...t.items.categories, qty: categories.length,
+    stats: [[s.largest, categories[0] ? `${categories[0].name} · ${categories[0].posts.length}` : '—']],
+    href: '/categories/',
+  },
+  {
+    key: 'tags', icon: 'tag', tier: 0, ...t.items.tags, qty: tags.length,
+    stats: [[s.mostUsed, tags.slice(0, 2).map((x) => x.name).join(' · ') || '—']],
+    href: '/tags/',
+  },
+  {
+    key: 'reading', icon: 'potion', tier: 1, ...t.items.reading, qty: posts.length,
+    stats: [
+      [v.under(5), v.postsN(inBucket('quick'))],
+      [v.range(5, 15), v.postsN(inBucket('long'))],
+      [v.over(15), v.postsN(inBucket('deep'))],
+    ],
+    href: '/items/reading/',
+  },
+  {
+    key: 'code', icon: 'ore', tier: 2, ...t.items.code, qty: codeTotal,
+    stats: [[s.inPosts, v.postsN(codeCounts.filter(Boolean).length)]],
+    href: '/items/code/',
+  },
+  {
+    key: 'search', icon: 'spyglass', tier: 3, ...t.items.search, qty: null,
+    stats: [[s.index, v.postsN(posts.length)]],
+    href: '/search/',
+  },
+  {
+    key: 'about', icon: 'brush', tier: 2, ...t.items.about, text: SITE.author.bio, qty: null,
+    stats: [[s.name, SITE.author.name], ...(contact ? [[s.elsewhere, contact.name] as [string, string]] : [])],
+    href: '/about/',
+  },
+  {
+    key: 'horn', icon: 'horn', tier: 1, ...t.items.horn, qty: null,
+    stats: [[s.format, 'RSS 2.0']],
+    href: '/rss.xml',
+  },
+  {
+    key: 'lantern', icon: 'lantern', tier: 0, ...t.items.lantern, qty: null,
+    stats: [[s.default, SITE.defaultTheme === 'auto' ? v.followsSystem : SITE.defaultTheme]],
+    lantern: true,
+  },
+];
+---
+
+<nav class="item-bar wrap" aria-label={t.itemBox}>
+  <ul>
+    {
+      items.map((it, i) => {
+        const Tag = it.lantern ? 'button' : 'a';
+        const align = i < 2 ? 'start' : i > items.length - 3 ? 'end' : 'center';
+        return (
+          <li>
+            <Tag
+              class="slot"
+              href={it.lantern ? undefined : withBase(it.href!)}
+              type={it.lantern ? 'button' : undefined}
+              data-theme-toggle={it.lantern ? '' : undefined}
+              data-label-on={it.lantern ? t.nightOn : undefined}
+              data-label-off={it.lantern ? t.nightOff : undefined}
+              aria-describedby={`item-tip-${it.key}`}
+            >
+              <Fragment set:html={itemIconSvg(it.icon, it.tier)} />
+              <span class="sr-only">{it.name}</span>
+              {it.qty != null && <span class="qty mono" aria-hidden="true">×{it.qty}</span>}
+            </Tag>
+            <div class="tip" id={`item-tip-${it.key}`} role="tooltip" data-align={align}>
+              <p class="tip-name">{it.name}</p>
+              <p class="tip-kind mono">
+                {it.kind}
+                {it.qty != null && ` · ${t.owned(it.qty)}`}
+              </p>
+              {it.text && <p class="tip-text">{it.text}</p>}
+              <dl>
+                {it.stats.map(([k, val]) => (
+                  <>
+                    <dt>{k}</dt>
+                    <dd>{val}</dd>
+                  </>
+                ))}
+              </dl>
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+
+<style>
+  .item-bar {
+    padding-block: 28px 4px;
+  }
+
+  ul {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+  }
+
+  /* Each slot floats on the paper. Only transform and opacity animate, so hovering stays smooth. */
+  .slot {
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--lift-rest);
+    color: var(--text);
+    cursor: pointer;
+    transition: transform 0.35s var(--ease);
+    will-change: transform;
+  }
+
+  .slot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: var(--lift-hover);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+    pointer-events: none;
+  }
+
+  .slot::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    width: 16px;
+    height: 2px;
+    margin-left: -8px;
+    border-radius: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.35s var(--ease);
+  }
+
+  .slot :global(.item-icon) {
+    width: 38px;
+    height: 38px;
+    transition: transform 0.45s var(--ease);
+  }
+
+  .slot:hover,
+  .slot:focus-visible {
+    transform: translateY(-4px);
+    text-decoration: none;
+  }
+
+  .slot:hover::before,
+  .slot:focus-visible::before {
+    opacity: 1;
+  }
+
+  .slot:hover::after,
+  .slot:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .slot:hover :global(.item-icon),
+  .slot:focus-visible :global(.item-icon) {
+    transform: translateY(-2px) scale(1.08) rotate(-3deg);
+  }
+
+  .slot:active {
+    transform: translateY(-2px) scale(0.96);
+    transition-duration: 0.12s;
+  }
+
+  .qty {
+    position: absolute;
+    right: 4px;
+    bottom: 1px;
+    font-size: 0.65rem;
+    letter-spacing: 0;
+    color: var(--text-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Hover card. Fades and rises into place; aligned to stay on screen at the ends of the bar. */
+  .tip {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 16px);
+    left: 50%;
+    width: 248px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--lift-hover);
+    text-align: left;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -6px);
+    transition:
+      opacity 0.2s ease,
+      transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+      visibility 0s 0.2s;
+    pointer-events: none;
+  }
+
+  .tip[data-align='start'] {
+    left: 0;
+    transform: translate(0, -6px);
+  }
+
+  .tip[data-align='end'] {
+    left: auto;
+    right: 0;
+    transform: translate(0, -6px);
+  }
+
+  li:hover .tip,
+  .slot:focus-visible + .tip {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition:
+      opacity 0.2s ease 0.08s,
+      transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) 0.08s,
+      visibility 0s;
+  }
+
+  li:hover .tip[data-align='start'],
+  li:hover .tip[data-align='end'],
+  .slot:focus-visible + .tip[data-align='start'],
+  .slot:focus-visible + .tip[data-align='end'] {
+    transform: translate(0, 0);
+  }
+
+  .tip p {
+    margin: 0;
+  }
+
+  .tip-name {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .tip-kind {
+    margin-top: 2px !important;
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+
+  .tip-text {
+    margin-top: 8px !important;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--text-soft);
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 3px 12px;
+    margin: 10px 0 0;
+    padding-top: 9px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.82rem;
+  }
+
+  dt {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding-top: 2px;
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Cards only when the bar fits on one row and the device can hover.
+     On touch screens tapping a slot opens it, so the cards stay hidden. */
+  @media (hover: none), (max-width: 819px) {
+    .tip {
+      display: none;
+    }
+  }
+
+  @media (max-width: 560px) {
+    ul {
+      gap: 10px;
+    }
+
+    .slot {
+      width: 54px;
+      height: 54px;
+    }
+
+    .slot :global(.item-icon) {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slot,
+    .slot::before,
+    .slot::after,
+    .slot :global(.item-icon),
+    .tip {
+      transition: none;
+    }
+
+    .slot:hover :global(.item-icon),
+    .slot:focus-visible :global(.item-icon) {
+      transform: none;
+    }
+  }
+</style>

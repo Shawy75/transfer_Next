@@ -1,5 +1,5 @@
 ---
-/** Lists for the item box entries that are filters: the three reading-time potions and code ore. */
+/** Lists behind the item bar's filter items: reading time (grouped by length) and code ore. */
 import type { GetStaticPaths } from 'astro';
 import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
@@ -7,38 +7,51 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import ItemIcon from '@/components/ItemIcon.astro';
 import PostTimeline from '@/components/PostTimeline.astro';
 import { BUCKET_TIER, codeBlockCount, getPosts, readingBucket, type Post, type ReadingBucket } from '@/utils/posts';
-import type { ItemIconName, Tier } from '@/components/item-icons';
 
 export const getStaticPaths = (async () => {
   const posts = await getPosts();
-  const buckets: ReadingBucket[] = ['quick', 'long', 'deep'];
   return [
-    ...buckets.map((key) => ({
-      params: { key },
-      props: { key, icon: 'potion' as ItemIconName, tier: BUCKET_TIER[key] as Tier, posts: posts.filter((p) => readingBucket(p) === key) },
-    })),
-    { params: { key: 'code' }, props: { key: 'code' as const, icon: 'ore' as ItemIconName, tier: 2 as Tier, posts: posts.filter((p) => codeBlockCount(p) > 0) } },
+    { params: { key: 'reading' }, props: { key: 'reading' as const, posts } },
+    { params: { key: 'code' }, props: { key: 'code' as const, posts: posts.filter((p) => codeBlockCount(p) > 0) } },
   ];
 }) satisfies GetStaticPaths;
 
 interface Props {
-  key: ReadingBucket | 'code';
-  icon: ItemIconName;
-  tier: Tier;
+  key: 'reading' | 'code';
   posts: Post[];
 }
 
-const { key, icon, tier, posts } = Astro.props;
+const { key, posts } = Astro.props;
 const t = useStrings(SITE.locale);
 const item = t.items[key];
+const buckets: ReadingBucket[] = ['quick', 'long', 'deep'];
 ---
 
 <BaseLayout title={t.itemList(item.name)} description={item.text}>
   <section class="card page-card">
-    <div class="icon"><ItemIcon name={icon} tier={tier} size={56} /></div>
+    <div class="icon"><ItemIcon name={key === 'code' ? 'ore' : 'potion'} tier={key === 'code' ? 2 : 1} size={56} /></div>
     <h1 class="page-title">{item.name}</h1>
-    <p class="page-subtitle">{item.text} · {t.postCount(posts.length)}</p>
-    {posts.length ? <PostTimeline posts={posts} /> : <p class="empty">—</p>}
+    <p class="page-subtitle">{item.text}</p>
+    {
+      key === 'code' ? (
+        <PostTimeline posts={posts} />
+      ) : (
+        buckets.map((b) => {
+          const list = posts.filter((p) => readingBucket(p) === b);
+          return (
+            <section class="bucket" aria-labelledby={`bucket-${b}`}>
+              <h2 id={`bucket-${b}`}>
+                <ItemIcon name="potion" tier={BUCKET_TIER[b]} size={30} />
+                <span>{t.items[b].name}</span>
+                <span class="count mono">{t.postCount(list.length)}</span>
+              </h2>
+              <p class="bucket-text">{t.items[b].text}</p>
+              {list.length > 0 && <PostTimeline posts={list} />}
+            </section>
+          );
+        })
+      )
+    }
   </section>
 </BaseLayout>
 
@@ -49,8 +62,29 @@ const item = t.items[key];
     margin-bottom: 8px;
   }
 
-  .empty {
-    text-align: center;
+  .bucket + .bucket {
+    margin-top: 2.5rem;
+  }
+
+  .bucket h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+
+  .count {
     color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  .bucket-text {
+    margin: 4px 0 1rem;
+    color: var(--muted);
+    font-size: 0.9rem;
   }
 </style>

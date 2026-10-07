@@ -1,48 +1,48 @@
 ---
-title: Designing the Item Box
-description: How Sumi turns a blog's sections into a game-style item box, and the rules that keep ten black-and-white icons readable without a single colour.
+title: Designing the Item Bar
+description: How Sumi turns a blog's sections into a game-style item bar, and the rules that keep ten black-and-white icons readable without a single colour.
 date: 2026-10-02
 category: Design
 tags: [Design, Sumi, Icons]
 ---
 
-Most blog themes open with a hero image and a list of posts. Sumi opens with an item box.
-Every section of the site is an item you can pick up: the articles are a scroll, the
-archive is a chest, tags are small wooden tags, search is a spyglass. Each slot shows how
-many you own, and hovering one shows its card. This post explains why it works that way and
-the rules behind the icons, so you can extend the set without breaking it.
+Most blog themes open with a hero image and a list of posts. Sumi opens with an item bar:
+ten slots, one for each section of the site. The articles are a scroll, the archive is a
+chest, tags are small wooden tags, search is a spyglass. Each slot shows how many you own,
+hovering one shows its card, and clicking it takes you there. This post explains why it
+works that way and the rules behind the icons, so you can extend the set without breaking it.
 
-## Why an item box
+## Why an item bar
 
 A blog's home page has two jobs. It has to show what is new, and it has to show what is
 there. The first job is easy; a list of recent posts does it. The second job usually ends
 up in a sidebar full of counters and tag clouds that nobody reads.
 
-An item box does the second job in a form people already know how to read. Anyone who has
-played a game with an inventory understands a grid of slots with a number in the corner.
+An item bar does the second job in a form people already know how to read. Anyone who has
+played a game with a quick-item bar understands a row of slots with a number in the corner.
 They know that hovering a slot shows a description, that rarer things look different, and
-that a full box means a well-stocked player. The metaphor carries the information with
+that a full bar means a well-stocked player. The metaphor carries the information with
 very little explanation.
 
-It also changes the tone. A grid of potions and scrolls says that the person behind the
+It also changes the tone. A row of potions and scrolls says that the person behind the
 blog enjoys what they do. That matters more than it sounds: the first impression of a
 personal site is mostly about the person.
 
 ## Every number is real
 
-The item box would be a gimmick if the numbers were decoration. They are not. Each count
+The item bar would be a gimmick if the numbers were decoration. They are not. Each count
 is computed from your posts when the site is built:
 
 - **Articles** counts published posts and totals their words.
 - **Archive** counts the years you have been writing and finds your busiest one.
 - **Categories** and **Tags** count distinct terms and show the most used.
-- **Quick Read**, **Long Read** and **Deep Read** sort posts by reading time: under five
-  minutes, five to fifteen, and over fifteen.
+- **Reading Time** sorts posts by how long they take: under five minutes, five to
+  fifteen, and over fifteen.
 - **Code Ore** counts fenced code blocks across every post.
 
-Nothing needs to be maintained by hand. Write a post and the box updates on the next
-build. Each card ends with a link to the matching page, and the three potions and the ore
-open their own lists, so the box doubles as navigation.
+Nothing needs to be maintained by hand. Write a post and the bar updates on the next
+build. Every slot is also a link, and the potion and the ore open their own lists, so the
+bar doubles as navigation.
 
 ## Rarity without colour
 
@@ -61,7 +61,7 @@ gets one of four fills:
 | Legendary | Solid ink     | Heavy, deliberate, the real thing |
 
 The order follows how much ink each fill uses. Your eye already ranks darker as weightier,
-so the ranking needs no legend. Look at the three potions side by side: the quick read is
+so the ranking needs no legend. The reading-time potion shows it best: the quick read is
 an empty bottle, the long read is speckled, and the deep read is filled with ink. You can
 tell which one is the serious commitment before you read a word.
 
@@ -93,13 +93,13 @@ makes it impossible to read the rarity at a glance, so it is never done.
 
 A short light stroke near the top left suggests a shine, and a soft ellipse under each icon
 grounds it on the shelf. Both are subtle. Together they are what makes the icons look like
-objects in a box rather than symbols on a page.
+objects you could pick up rather than symbols on a page.
 
 ## Light and dark
 
 All of the icon colours come from the page palette. On paper, outlines are ink and fills
 are a warm off-white. In dark mode the palette flips: outlines become pale and the solid
-legendary fill becomes the brightest thing in the box. The ranking survives the flip,
+legendary fill becomes the brightest thing on the bar. The ranking survives the flip,
 because legendary items are still the ones with the most "ink", even when that ink is
 light.
 
@@ -138,7 +138,7 @@ categoryIcons: {
 
 ## What it is not
 
-The item box is not a game. There are no points, no streaks, and nothing to collect for
+The item bar is not a game. There are no points, no streaks, and nothing to collect for
 its own sake. It is a table of contents dressed as an inventory, and every slot leads
-somewhere useful. If a section of your site is not worth a slot, leave it out of the box.
-A half-empty inventory that is honest beats a full one stuffed with filler.
+somewhere useful. If a section of your site is not worth a slot, leave it out of the bar.
+A short bar that is honest beats a full one stuffed with filler.

@@ -1,7 +1,7 @@
 # Sumi — a minimal blog theme for Astro
 
 Sumi (墨, "ink") is a calm blog theme for [Astro](https://astro.build): rice-paper tones,
-a game-style **item box** on the home page built from your real content, black-and-white
+a game-style **item bar** on the home page built from your real content, black-and-white
 item icons, an ink-in-water hover on post titles, and typography that works equally well
 for English and Chinese.
 
@@ -11,8 +11,9 @@ for English and Chinese.
 
 - **Fast and static** — zero client-side framework; a few kilobytes of vanilla JS for small interactions.
 - **Light and dark mode** — follows the OS by default, remembers the reader's choice, no flash on load.
-- **Item box** — the blog's sections as game items. Post, year, category, tag and code-block counts
-  and reading-time buckets are all computed from your posts at build time.
+- **Item bar** — ten slots for the blog's sections. Post, year, category, tag and code-block counts
+  and reading-time buckets are computed from your posts at build time; hover a slot for its card,
+  click to open it.
 - **Ten black-and-white item icons** with four rarity fills (blank, dots, hatching, solid ink).
 - **Ink-in-water title hover** in your accent colour.
 - **Table of contents** beside each post with scroll-spy, plus a collapsible inline TOC on narrow screens.
@@ -106,7 +107,7 @@ The sample posts in `src/content/posts/` demonstrate every feature — delete th
 - **Code theme** — `shikiConfig.themes` in `astro.config.mjs` (any [Shiki theme](https://shiki.style/themes)).
 - **Markdown plugins** — add remark/rehype plugins to `unified({...})` in `astro.config.mjs`.
 - **UI text / new languages** — `src/i18n.ts`.
-- **Item icons** — `src/components/item-icons.ts` (rules in the sample post *Designing the Item Box*).
+- **Item icons** — `src/components/item-icons.ts` (rules in the sample post *Designing the Item Bar*).
 - **Line icons** (footer, post meta) — `src/components/icons.ts`.
 
 ## Deploying
@@ -132,7 +133,7 @@ src/
   i18n.ts               UI strings
   content.config.ts     post frontmatter schema
   content/posts/        your posts
-  components/           UI pieces (Masthead, Nav, ItemBox, PostRow, TOC…)
+  components/           UI pieces (Masthead, Nav, ItemBar, PostRow, TOC…)
   components/item-icons.ts  the item icon set — add your own here
   layouts/              page shells
   pages/                routes (home, posts, archives, categories, tags, search, RSS)
@@ -144,7 +145,7 @@ src/
 
 ## 中文说明
 
-Sumi 是一个水墨风格的 Astro 博客主题：首页有一个游戏道具风格的**物品栏**，文章数、分类、标签、阅读时长、代码块数量都从你的文章自动统计；配一套黑白道具图标、标题悬停时的「墨入水」效果，支持暗色模式、站内搜索、代码高亮、数学公式，中英文界面开箱即用。
+Sumi 是一个水墨风格的 Astro 博客主题：首页有一排游戏道具风格的**道具栏**（10 格），文章数、分类、标签、阅读时长、代码块数量都从你的文章自动统计；配一套黑白道具图标、标题悬停时的「墨入水」效果，支持暗色模式、站内搜索、代码高亮、数学公式，中英文界面开箱即用。
 
 **环境要求**：Node.js 22.12 及以上。
 
