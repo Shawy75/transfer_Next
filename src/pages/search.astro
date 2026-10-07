@@ -43,7 +43,8 @@ const t = useStrings(SITE.locale);
   };
 
   async function load() {
-    const siteBase = (container?.dataset.base ?? '/').replace(/\/?$/, '/');
+    // Resolve against the current page so relative bases work too; Pagefind needs an absolute path.
+    const siteBase = new URL(container?.dataset.base ?? '/', location.href).pathname.replace(/\/?$/, '/');
     const base = `${siteBase}pagefind/`;
     const css = document.createElement('link');
     css.rel = 'stylesheet';
