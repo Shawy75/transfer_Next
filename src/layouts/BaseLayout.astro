@@ -1,22 +1,24 @@
 ---
-import type { MarkdownHeading } from 'astro';
 import '@/styles/global.css';
 import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
 import BaseHead, { type SeoProps } from '@/components/BaseHead.astro';
-import Header from '@/components/Header.astro';
-import Sidebar from '@/components/Sidebar.astro';
+import InkDefs from '@/components/InkDefs.astro';
+import Masthead from '@/components/Masthead.astro';
+import Nav from '@/components/Nav.astro';
 import Footer from '@/components/Footer.astro';
 import BackToTop from '@/components/BackToTop.astro';
 
 interface Props extends SeoProps {
-  /** Headings for the sidebar table of contents (post pages only). */
-  headings?: MarkdownHeading[];
   /** Page language when it differs from the site locale. */
   lang?: string;
+  /** Home page: shows the large masthead with the intro. */
+  home?: boolean;
+  /** Let the page use the full content width instead of the reading column. */
+  wide?: boolean;
 }
 
-const { headings, lang, ...seo } = Astro.props;
+const { lang, home = false, wide = false, ...seo } = Astro.props;
 const t = useStrings(SITE.locale);
 const accentCss = `:root{--accent:${SITE.accent.light}}:root[data-theme='dark']{--accent:${SITE.accent.dark}}`;
 ---
@@ -41,68 +43,26 @@ const accentCss = `:root{--accent:${SITE.accent.light}}:root[data-theme='dark']{
   </head>
   <body>
     <a class="skip-link" href="#main">{t.skipToContent}</a>
-    <div class="layout">
-      <div class="layout-header">
-        <Header />
-      </div>
-      <main id="main" class="layout-main">
-        <slot />
-      </main>
-      <div class="layout-sidebar">
-        <Sidebar headings={headings} />
-      </div>
-    </div>
+    <InkDefs />
+    <Masthead full={home} />
+    <Nav />
+    <main id="main" class:list={['main', { wide: wide || home }]}>
+      <slot />
+    </main>
     <Footer />
     <BackToTop />
   </body>
 </html>
 
 <style>
-  .layout {
-    display: grid;
-    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      'header main'
-      'sidebar main';
-    gap: var(--gap);
+  .main {
     max-width: var(--content-max);
-    margin: 0 auto;
-    padding: var(--gap) var(--gap) 0;
+    margin-inline: auto;
+    padding: 40px 16px 0;
   }
 
-  .layout-header {
-    grid-area: header;
-  }
-
-  .layout-main {
-    grid-area: main;
-    min-width: 0;
-  }
-
-  .layout-sidebar {
-    grid-area: sidebar;
-  }
-
-  .layout-sidebar > :global(*) {
-    position: sticky;
-    top: var(--gap);
-  }
-
-  @media (max-width: 991px) {
-    .layout {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto;
-      grid-template-areas:
-        'header'
-        'main'
-        'sidebar';
-      padding: 0.75rem 0.75rem 0;
-      gap: 0.75rem;
-    }
-
-    .layout-sidebar > :global(*) {
-      position: static;
-    }
+  .main.wide {
+    padding-top: 0;
+    padding-inline: 0;
   }
 </style>

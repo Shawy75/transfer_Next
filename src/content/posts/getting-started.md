@@ -7,7 +7,7 @@ tags: [Sumi, Astro, Setup]
 pinned: true
 ---
 
-Sumi is a calm, two-column blog theme for [Astro](https://astro.build). This post walks
+Sumi is a calm, ink-and-paper blog theme for [Astro](https://astro.build) with a game-style item box on the home page. This post walks
 through everything you need to go from a fresh download to a live site.
 
 ## Requirements

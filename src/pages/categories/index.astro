@@ -2,12 +2,16 @@
 import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import Icon from '@/components/Icon.astro';
+import ItemIcon from '@/components/ItemIcon.astro';
 import { getCategories, getPosts } from '@/utils/posts';
 import { withBase } from '@/utils/url';
 
 const t = useStrings(SITE.locale);
 const categories = getCategories(await getPosts());
+const iconFor = (name: string) => {
+  const c = SITE.categoryIcons[name] ?? SITE.categoryIcons.default;
+  return { name: c.icon, tier: c.tier };
+};
 ---
 
 <BaseLayout title={t.categories}>
@@ -19,7 +23,7 @@ const categories = getCategories(await getPosts());
         categories.map((c) => (
           <li>
             <a href={withBase(`/categories/${c.slug}/`)}>
-              <Icon name="folder" size={16} />
+              <ItemIcon {...iconFor(c.name)} size={28} />
               <span class="name">{c.name}</span>
               <span class="count">{t.postCount(c.posts.length)}</span>
             </a>
@@ -56,9 +60,6 @@ const categories = getCategories(await getPosts());
     text-decoration: none;
   }
 
-  .category-list .icon {
-    color: var(--accent);
-  }
 
   .name {
     flex: 1;

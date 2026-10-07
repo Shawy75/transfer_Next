@@ -1,0 +1,119 @@
+---
+import { SITE } from '@/site.config';
+import { withBase } from '@/utils/url';
+
+interface Props {
+  /** Home page: large title with the intro. Other pages: a compact version. */
+  full?: boolean;
+}
+
+const { full = false } = Astro.props;
+const sealChars = [...SITE.seal].slice(0, 4);
+const TitleTag = full ? 'h1' : 'p';
+---
+
+<header class:list={['masthead wrap', { full }]}>
+  <a class="seal" href={withBase('/')} aria-label={SITE.title} data-count={sealChars.length}>
+    {sealChars.map((c) => <span aria-hidden="true">{c}</span>)}
+  </a>
+  <TitleTag class="site-title">
+    <a href={withBase('/')}>{SITE.title}</a>
+  </TitleTag>
+  <p class="subtitle mono">{SITE.subtitle}</p>
+  {full && SITE.intro && <p class="intro">{SITE.intro}</p>}
+</header>
+
+<style>
+  .masthead {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding-block: 40px 22px;
+    text-align: center;
+  }
+
+  .masthead.full {
+    gap: 14px;
+    padding-block: 72px 30px;
+  }
+
+  .seal {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 4px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    transform: rotate(-4deg);
+    box-shadow:
+      inset 0 0 0 2px var(--accent),
+      inset 0 0 0 3.5px var(--bg);
+    transition: transform 0.3s;
+  }
+
+  .seal[data-count='1'],
+  .seal[data-count='2'] {
+    grid-template-columns: 1fr;
+    font-size: 14px;
+  }
+
+  .full .seal {
+    width: 46px;
+    height: 46px;
+    font-size: 12px;
+  }
+
+  .seal:hover {
+    transform: rotate(4deg);
+    text-decoration: none;
+  }
+
+  .site-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+
+  .full .site-title {
+    font-size: clamp(2.75rem, 8vw, 4.25rem);
+  }
+
+  .site-title a {
+    color: var(--text);
+  }
+
+  .site-title a:hover {
+    text-decoration: none;
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .intro {
+    margin: 4px 0 0;
+    max-width: 34em;
+    color: var(--text-soft);
+    font-size: 1.0625rem;
+    text-wrap: balance;
+  }
+
+  @media (max-width: 560px) {
+    .masthead.full {
+      padding-block: 44px 22px;
+    }
+  }
+</style>

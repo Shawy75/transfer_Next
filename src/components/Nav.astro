@@ -1,0 +1,123 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import { withBase } from '@/utils/url';
+import ItemIcon from './ItemIcon.astro';
+
+const t = useStrings(SITE.locale);
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const home = withBase('/').replace(/\/$/, '') || '/';
+
+function isActive(href: string): boolean {
+  const target = withBase(href).replace(/\/$/, '') || '/';
+  if (target === home) return path === home || new RegExp(`^${home === '/' ? '' : home}/\\d+$`).test(path);
+  return path === target || path.startsWith(`${target}/`);
+}
+---
+
+<nav class="site-nav wrap" aria-label="Main">
+  <ul>
+    {
+      SITE.nav.map((item) => (
+        <li>
+          <a href={withBase(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>
+            {item.icon && <ItemIcon name={item.icon} size={22} />}
+            <span>{item.text}</span>
+          </a>
+        </li>
+      ))
+    }
+    <li>
+      <a href={withBase('/search/')} aria-current={isActive('/search/') ? 'page' : undefined}>
+        <ItemIcon name="spyglass" tier={3} size={22} />
+        <span>{t.search}</span>
+      </a>
+    </li>
+    <li>
+      <button
+        type="button"
+        data-theme-toggle
+        aria-label={t.toggleTheme}
+        data-label-on={t.nightOn}
+        data-label-off={t.nightOff}
+      >
+        <ItemIcon name="lantern" size={22} />
+        <span data-theme-label>{t.nightOn}</span>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<style>
+  .site-nav ul {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+    border-block: 1px solid var(--border);
+  }
+
+  .site-nav a,
+  .site-nav button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: var(--radius);
+    background: none;
+    color: var(--text-soft);
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .site-nav a:hover,
+  .site-nav button:hover {
+    background: var(--surface-2);
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .site-nav a[aria-current='page'] {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  @media (max-width: 560px) {
+    .site-nav a,
+    .site-nav button {
+      padding: 5px 9px;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  // Shared by every lantern on the page: switch scheme, remember it, update the label.
+  const root = document.documentElement;
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]');
+  const sync = () => {
+    const dark = root.dataset.theme === 'dark';
+    for (const b of buttons) {
+      const label = b.querySelector('[data-theme-label]');
+      if (label) label.textContent = dark ? b.dataset.labelOff! : b.dataset.labelOn!;
+      b.setAttribute('aria-pressed', String(dark));
+    }
+  };
+  for (const b of buttons) {
+    b.addEventListener('click', () => {
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem('sumi-theme', next);
+      } catch {
+        /* storage unavailable — the choice lasts for this page view only */
+      }
+      sync();
+    });
+  }
+  sync();
+</script>

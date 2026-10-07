@@ -51,10 +51,10 @@ Without one, the site-wide `ogImage` from `site.config.ts` is used.
 
 ## Table of contents
 
-Headings from `##` to `###` appear in the sidebar's **Contents** tab, and the entry for the
+Headings from `##` to `###` appear in the **Contents** column beside the post, and the entry for the
 section you are reading is highlighted as you scroll. Change the depth with `toc.minDepth`
 and `toc.maxDepth` in the config, or turn the TOC off entirely with `toc.enable: false`.
 
 ### On small screens
 
-Phones and tablets get a collapsible contents block at the top of the post instead.
+Phones, tablets and narrow windows get a collapsible contents block at the top of the post instead.

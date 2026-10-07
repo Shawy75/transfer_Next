@@ -1,49 +1,56 @@
 /* ==========================================================================
    Sumi — global styles
-   Colours are CSS custom properties so the whole palette can be re-themed
-   from one place. The accent colour is injected from site.config.ts.
+   Rice paper and ink: every colour is a custom property, so the whole palette
+   can be re-themed from here. The accent colour is injected from site.config.ts.
    ========================================================================== */
 
+@import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/source-sans-3/index.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
 :root {
-  --bg: #f3f2ee;
-  --surface: #ffffff;
-  --surface-2: #f8f7f4;
-  --text: #24221f;
-  --text-soft: #4a4742;
-  --muted: #6b675f;
-  --border: #e6e3dc;
-  --ink: #1d1c1a;
-  --on-ink: #f5f3ee;
+  --bg: #ebeae5; /* cool rice paper */
+  --surface: #f2f1ed; /* panels sitting on the paper */
+  --surface-2: #e1e0da; /* recessed areas: the item box tray, hovers */
+  --paper-hi: #f7f6f2; /* light fill inside item icons */
+  --text: #17181b; /* ink */
+  --text-soft: #46484c;
+  --muted: #5f6165;
+  --border: #c8c7c0;
+  --ink: #17181b;
+  --on-ink: #f7f6f2;
   --code-bg: #ffffff; /* pure white keeps the github-light-default palette above 4.5:1 contrast */
-  --mark: #fdf1c7;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.04);
+  --mark: #f6e7b0;
+  --shadow: none;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'PingFang SC',
+  --font-sans: 'Source Sans 3 Variable', 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
-  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Songti SC', 'Noto Serif CJK SC', serif;
-  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --font-serif: 'Source Serif 4 Variable', 'Source Serif 4', 'Iowan Old Style', Georgia, 'Songti SC',
+    'Noto Serif CJK SC', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --radius: 6px;
-  --sidebar-width: 264px;
+  --radius: 3px;
   --gap: 1.25rem;
-  --content-max: 1180px;
+  --content-max: 1040px;
+  --prose-max: 720px;
 
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --bg: #121211;
-  --surface: #1b1a19;
-  --surface-2: #222120;
-  --text: #e7e4de;
-  --text-soft: #c4c0b8;
-  --muted: #8f8b84;
-  --border: #2d2b29;
-  --ink: #0b0b0a;
-  --on-ink: #ece9e2;
-  --code-bg: #161514;
+  --bg: #101113;
+  --surface: #18191c;
+  --surface-2: #1e1f22;
+  --paper-hi: #24252a;
+  --text: #e7e5df;
+  --text-soft: #b2b0aa;
+  --muted: #918f8a;
+  --border: #2c2d31;
+  --ink: #e7e5df;
+  --on-ink: #101113;
+  --code-bg: #141517;
   --mark: #4a3f17;
-  --shadow: none;
 
   color-scheme: dark;
 }
@@ -142,11 +149,21 @@ button {
 
 /* ---------- Shared building blocks ---------- */
 
+.wrap {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
 .card {
   background: var(--surface);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .page-card {
@@ -156,10 +173,11 @@ button {
 .page-title {
   margin: 0 0 0.25rem;
   font-family: var(--font-serif);
-  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.25;
   text-align: center;
+  text-wrap: balance;
 }
 
 .page-subtitle {
@@ -167,6 +185,35 @@ button {
   text-align: center;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+/* Section heading with a hairline running to the right edge. */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 0 0 20px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.section-head .mono {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.section-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  align-self: center;
 }
 
 .btn {
@@ -187,7 +234,7 @@ button {
 
 .btn:hover {
   background: var(--text);
-  color: var(--surface);
+  color: var(--bg);
   text-decoration: none;
 }
 
@@ -455,4 +502,135 @@ button {
 .heading-anchor:focus-visible {
   opacity: 1;
   text-decoration: none;
+}
+
+/* ---------- Item icons (see components/item-icons.ts) ---------- */
+
+.item-icon {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.item-icon .o {
+  stroke: var(--text);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.item-icon .fl {
+  fill: var(--paper-hi);
+}
+
+.item-icon .fd {
+  fill: url(#ink-dots);
+}
+
+.item-icon .fh {
+  fill: url(#ink-hatch);
+}
+
+.item-icon .fs {
+  fill: var(--text);
+}
+
+.item-icon .dot {
+  fill: var(--paper-hi);
+}
+
+.item-icon .ln {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.item-icon .hi {
+  fill: none;
+  stroke: var(--paper-hi);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.item-icon .sh {
+  fill: var(--text);
+  opacity: 0.14;
+}
+
+/* ---------- Ink dropped into water (title hover) ----------
+   Add class="ink-title" to a link. A dense drop lands at the left edge and thins into
+   drifting wisps that travel right. The layer is much larger than the text so the
+   drifting ink never touches its clipped edge. */
+
+@property --spread {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+.ink-title {
+  position: relative;
+  z-index: 0;
+  color: inherit;
+}
+
+.ink-title:hover {
+  text-decoration: none;
+}
+
+.ink-title::before,
+.ink-title::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  left: -64px;
+  right: -64px;
+  top: -110%;
+  bottom: -150%;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--spread) - 30%), transparent var(--spread));
+  mask-image: linear-gradient(90deg, #000 calc(var(--spread) - 30%), transparent var(--spread));
+  opacity: 0;
+  transition:
+    --spread 0s 0.45s,
+    opacity 0.45s;
+}
+
+.ink-title::before {
+  background:
+    radial-gradient(ellipse 3.4% 10% at 12% 47%, color-mix(in srgb, var(--accent) 80%, transparent), transparent 75%),
+    radial-gradient(ellipse 7% 13% at 15% 49%, color-mix(in srgb, var(--accent) 46%, transparent), transparent 75%),
+    radial-gradient(ellipse 9% 10% at 26% 44%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 75%),
+    radial-gradient(ellipse 9% 11% at 35% 52%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 75%),
+    radial-gradient(ellipse 12% 10% at 51% 46%, color-mix(in srgb, var(--accent) 19%, transparent), transparent 75%),
+    radial-gradient(ellipse 11% 10% at 66% 51%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 75%),
+    radial-gradient(ellipse 11% 9% at 80% 46%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 75%);
+  filter: url(#ink-water);
+}
+
+.ink-title::after {
+  background:
+    radial-gradient(ellipse 11% 14% at 17% 48%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 75%),
+    radial-gradient(ellipse 18% 12% at 45% 48%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 75%),
+    radial-gradient(ellipse 15% 11% at 72% 48%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 75%);
+  filter: url(#ink-haze);
+}
+
+.ink-title:hover::before,
+.ink-title:hover::after,
+.ink-title:focus-visible::before,
+.ink-title:focus-visible::after {
+  --spread: 135%;
+  opacity: 1;
+  transition:
+    --spread 2.8s cubic-bezier(0.12, 0.62, 0.25, 1),
+    opacity 0.15s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ink-title:hover::before,
+  .ink-title:hover::after {
+    transition: opacity 0.15s;
+  }
 }

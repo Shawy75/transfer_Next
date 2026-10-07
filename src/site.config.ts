@@ -5,12 +5,14 @@
  * Every option is documented inline; see README.md for a full walkthrough.
  */
 import type { IconName } from './components/icons';
+import type { ItemIconName, Tier } from './components/item-icons';
 import type { Locale } from './i18n';
 
 export interface NavItem {
   text: string;
   href: string;
-  icon?: IconName;
+  /** Item icon shown next to the label. See src/components/item-icons.ts. */
+  icon?: ItemIconName;
 }
 
 export interface SocialLink {
@@ -28,7 +30,12 @@ export interface SiteConfig {
    */
   base: string;
   title: string;
+  /** Short line under the title, shown in small capitals. */
   subtitle: string;
+  /** One or two sentences introducing the blog, shown under the title on the home page. */
+  intro: string;
+  /** Up to four characters printed on the red seal above the title, e.g. 'SUMI' or '墨迹'. */
+  seal: string;
   /** Default meta description for pages that don't provide their own. */
   description: string;
   /** UI language. Built-in: 'en', 'zh-CN'. Add more in src/i18n.ts. */
@@ -47,6 +54,11 @@ export interface SiteConfig {
   postsPerPage: number;
   nav: NavItem[];
   social: SocialLink[];
+  /**
+   * Item icon (and rarity fill) for each category, used in post lists.
+   * Categories not listed here use `default`.
+   */
+  categoryIcons: Record<string, { icon: ItemIconName; tier: Tier }> & { default: { icon: ItemIconName; tier: Tier } };
   toc: {
     enable: boolean;
     /** Smallest heading level included (2 = h2). */
@@ -70,7 +82,9 @@ export const SITE: SiteConfig = {
   url: 'https://sumi-demo.example.com',
   base: '/',
   title: 'Sumi',
-  subtitle: 'Ink, paper, and quiet words',
+  subtitle: 'Ink · Cloud · Notes',
+  intro: 'Notes on front-end craft, small tools, and the occasional landscape sketch. Updated slowly, written carefully.',
+  seal: 'SUMI',
   description: 'A clean, minimal blog built with the Sumi theme for Astro.',
   locale: 'en',
   author: {
@@ -78,15 +92,15 @@ export const SITE: SiteConfig = {
     avatar: '/avatar.svg',
     bio: 'Writer, developer, and collector of small ideas.',
   },
-  accent: { light: '#b8372b', dark: '#e8766c' },
+  accent: { light: '#b3261e', dark: '#e66a5e' },
   defaultTheme: 'auto',
   postsPerPage: 6,
   nav: [
-    { text: 'Home', href: '/', icon: 'home' },
-    { text: 'Archives', href: '/archives/', icon: 'archive' },
-    { text: 'Categories', href: '/categories/', icon: 'folder' },
+    { text: 'Posts', href: '/', icon: 'scroll' },
+    { text: 'Archives', href: '/archives/', icon: 'chest' },
+    { text: 'Categories', href: '/categories/', icon: 'pouch' },
     { text: 'Tags', href: '/tags/', icon: 'tag' },
-    { text: 'About', href: '/about/', icon: 'user' },
+    { text: 'About', href: '/about/', icon: 'brush' },
   ],
   social: [
     { name: 'GitHub', href: 'https://github.com/', icon: 'github' },
@@ -94,6 +108,14 @@ export const SITE: SiteConfig = {
     { name: 'Email', href: 'mailto:hello@example.com', icon: 'mail' },
     { name: 'RSS', href: '/rss.xml', icon: 'rss' },
   ],
+  categoryIcons: {
+    Guide: { icon: 'scroll', tier: 0 },
+    Reference: { icon: 'ore', tier: 2 },
+    Design: { icon: 'brush', tier: 2 },
+    设计: { icon: 'brush', tier: 1 },
+    Essays: { icon: 'pouch', tier: 1 },
+    default: { icon: 'scroll', tier: 0 },
+  },
   toc: { enable: true, minDepth: 2, maxDepth: 3 },
   ogImage: '/og-default.png',
   since: 2025,

@@ -20,7 +20,7 @@ flash of the wrong colours.
 
 ## Changing the accent colour
 
-The accent is used for links, the active menu item, the reading-progress button, and the
+The accent is used for links, the ink that spreads under post titles, and the
 red "seal" in the logo. Set a different colour for each scheme:
 
 ```ts

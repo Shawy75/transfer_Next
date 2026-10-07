@@ -1,0 +1,14 @@
+---
+import { itemIconSvg, type ItemIconName, type Tier } from './item-icons';
+
+interface Props {
+  name: ItemIconName;
+  tier?: Tier;
+  size?: number;
+  class?: string;
+}
+
+const { name, tier = 0, size = 24, class: className = '' } = Astro.props;
+---
+
+<Fragment set:html={itemIconSvg(name, tier, className).replace('<svg ', `<svg width="${size}" height="${size}" `)} />

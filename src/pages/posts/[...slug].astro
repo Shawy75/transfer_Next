@@ -44,10 +44,10 @@ const permalink = new URL(postUrl(post), Astro.site ?? SITE.url).href;
   publishedTime={date}
   modifiedTime={updated}
   tags={tags}
-  headings={tocHeadings}
   lang={postLang(post)}
 >
-  <article class="post card" data-pagefind-body>
+  <div class:list={['post-layout', { 'has-toc': hasInlineToc }]}>
+  <article class="post" data-pagefind-body>
     <header class="post-header">
       <h1 class="post-title" data-pagefind-meta="title">{title}</h1>
       <div data-pagefind-ignore>
@@ -137,11 +137,55 @@ const permalink = new URL(postUrl(post), Astro.site ?? SITE.url).href;
       }
     </footer>
   </article>
+  {
+    hasInlineToc && (
+      <aside class="toc-rail" aria-labelledby="toc-rail-label" data-pagefind-ignore>
+        <p class="toc-label mono" id="toc-rail-label">{t.toc}</p>
+        <TableOfContents headings={tocHeadings} />
+      </aside>
+    )
+  }
+  </div>
 </BaseLayout>
 
 <style>
+  .post-layout {
+    display: grid;
+    grid-template-columns: minmax(0, var(--prose-max));
+    justify-content: center;
+    gap: 56px;
+  }
+
+  @media (min-width: 1100px) {
+    .post-layout.has-toc {
+      grid-template-columns: minmax(0, var(--prose-max)) 220px;
+    }
+  }
+
   .post {
-    padding: 2.5rem clamp(1.25rem, 5vw, 3rem);
+    min-width: 0;
+  }
+
+  .toc-rail {
+    display: none;
+  }
+
+  @media (min-width: 1100px) {
+    .toc-rail {
+      display: block;
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      padding-left: 16px;
+      border-left: 1px solid var(--border);
+    }
+  }
+
+  .toc-label {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
   }
 
   .post-header {
@@ -151,7 +195,8 @@ const permalink = new URL(postUrl(post), Astro.site ?? SITE.url).href;
   .post-title {
     margin: 0 0 0.75rem;
     font-family: var(--font-serif);
-    font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    text-wrap: balance;
     font-weight: 600;
     line-height: 1.3;
     text-align: center;
@@ -175,7 +220,7 @@ const permalink = new URL(postUrl(post), Astro.site ?? SITE.url).href;
     margin-bottom: 0.5rem;
   }
 
-  @media (max-width: 991px) {
+  @media (max-width: 1099px) {
     .inline-toc {
       display: block;
     }

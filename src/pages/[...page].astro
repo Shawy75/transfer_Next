@@ -3,7 +3,8 @@ import type { GetStaticPaths, Page } from 'astro';
 import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import PostCard from '@/components/PostCard.astro';
+import ItemBox from '@/components/ItemBox.astro';
+import PostRow from '@/components/PostRow.astro';
 import Pagination from '@/components/Pagination.astro';
 import { getPosts, sortForHome, type Post } from '@/utils/posts';
 import { withBase } from '@/utils/url';
@@ -19,19 +20,44 @@ interface Props {
 
 const { page } = Astro.props;
 const t = useStrings(SITE.locale);
-const title = page.currentPage > 1 ? t.page(page.currentPage, page.lastPage) : undefined;
+const first = page.currentPage === 1;
+const title = first ? undefined : t.page(page.currentPage, page.lastPage);
 ---
 
-<BaseLayout title={title}>
-  <h1 class="sr-only">{SITE.title}{title ? ` — ${title}` : ''}</h1>
-  {page.data.length === 0 && <p class="card page-card empty">{t.noPosts}</p>}
-  {page.data.map((post) => <PostCard post={post} />)}
-  <Pagination current={page.currentPage} last={page.lastPage} href={(n) => withBase(n === 1 ? '/' : `/${n}/`)} />
+<BaseLayout title={title} home={first} wide>
+  {first && <ItemBox />}
+  <section class="latest wrap" aria-labelledby="latest-title">
+    <div class="section-head">
+      {first ? <h2 id="latest-title">{t.latest}</h2> : <h1 id="latest-title">{title}</h1>}
+      <span class="mono">{String(page.total).padStart(2, '0')}</span>
+    </div>
+    <div class="rows">
+      {page.data.length === 0 && <p class="empty">{t.noPosts}</p>}
+      {page.data.map((post) => <PostRow post={post} level={first ? 3 : 2} />)}
+    </div>
+    <Pagination current={page.currentPage} last={page.lastPage} href={(n) => withBase(n === 1 ? '/' : `/${n}/`)} />
+  </section>
 </BaseLayout>
 
 <style>
-  .empty {
+  .latest {
+    padding-top: 56px;
+  }
+
+  .latest h1 {
     margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .rows {
+    border-top: 1px solid var(--text);
+  }
+
+  .empty {
+    padding-block: 2rem;
     color: var(--muted);
     text-align: center;
   }

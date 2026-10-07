@@ -1,8 +1,9 @@
 # Sumi — a minimal blog theme for Astro
 
-Sumi (墨, "ink") is a calm, two-column blog theme for [Astro](https://astro.build): warm paper
-tones, a sidebar with your profile and a live table of contents, and typography that works
-equally well for English and Chinese.
+Sumi (墨, "ink") is a calm blog theme for [Astro](https://astro.build): rice-paper tones,
+a game-style **item box** on the home page built from your real content, black-and-white
+item icons, an ink-in-water hover on post titles, and typography that works equally well
+for English and Chinese.
 
 [中文说明见下方](#中文说明)
 
@@ -10,7 +11,12 @@ equally well for English and Chinese.
 
 - **Fast and static** — zero client-side framework; a few kilobytes of vanilla JS for small interactions.
 - **Light and dark mode** — follows the OS by default, remembers the reader's choice, no flash on load.
-- **Sidebar table of contents** with scroll-spy, plus a collapsible inline TOC on phones.
+- **Item box** — the blog's sections as game items. Post, year, category, tag and code-block counts
+  and reading-time buckets are all computed from your posts at build time.
+- **Ten black-and-white item icons** with four rarity fills (blank, dots, hatching, solid ink).
+- **Ink-in-water title hover** in your accent colour.
+- **Table of contents** beside each post with scroll-spy, plus a collapsible inline TOC on narrow screens.
+- **Self-hosted fonts** (Source Serif 4, Source Sans 3, IBM Plex Mono) — no Google requests.
 - **Home page pagination**, pinned posts, drafts.
 - **Archives** (year timeline), **categories**, and a **tag cloud**.
 - **Full-text search** powered by [Pagefind](https://pagefind.app) — no external service, and Chinese posts are word-segmented so mixed-language blogs search correctly.
@@ -53,7 +59,9 @@ Open `src/site.config.ts`. Every option is commented. The ones to change first:
 | `locale`        | `'en'` or `'zh-CN'`.                                      |
 | `author`        | Name, avatar path and a one-line bio.                     |
 | `accent`        | Accent colour for light and dark mode.                    |
-| `nav`, `social` | Sidebar menu and social links.                            |
+| `intro`, `seal` | Home page introduction and the text on the red seal.      |
+| `nav`, `social` | Menu (with item icons) and footer social links.           |
+| `categoryIcons` | Item icon and rarity for each category.                   |
 | `postsPerPage`  | Posts per home page.                                      |
 | `postLicense`   | Licence notice under each post, or `false` to hide it.    |
 | `showThemeCredit` | The "Powered by Astro · Theme Sumi" footer line.       |
@@ -98,7 +106,8 @@ The sample posts in `src/content/posts/` demonstrate every feature — delete th
 - **Code theme** — `shikiConfig.themes` in `astro.config.mjs` (any [Shiki theme](https://shiki.style/themes)).
 - **Markdown plugins** — add remark/rehype plugins to `unified({...})` in `astro.config.mjs`.
 - **UI text / new languages** — `src/i18n.ts`.
-- **Icons** — `src/components/icons.ts`.
+- **Item icons** — `src/components/item-icons.ts` (rules in the sample post *Designing the Item Box*).
+- **Line icons** (footer, post meta) — `src/components/icons.ts`.
 
 ## Deploying
 
@@ -123,7 +132,8 @@ src/
   i18n.ts               UI strings
   content.config.ts     post frontmatter schema
   content/posts/        your posts
-  components/           UI pieces (Header, Sidebar, TOC, PostCard…)
+  components/           UI pieces (Masthead, Nav, ItemBox, PostRow, TOC…)
+  components/item-icons.ts  the item icon set — add your own here
   layouts/              page shells
   pages/                routes (home, posts, archives, categories, tags, search, RSS)
   styles/global.css     colours, typography, prose styles
@@ -134,7 +144,7 @@ src/
 
 ## 中文说明
 
-Sumi 是一个简洁的 Astro 双栏博客主题：左侧是站点信息与目录，右侧是文章卡片，支持暗色模式、站内搜索、代码高亮、数学公式，中英文界面开箱即用。
+Sumi 是一个水墨风格的 Astro 博客主题：首页有一个游戏道具风格的**物品栏**，文章数、分类、标签、阅读时长、代码块数量都从你的文章自动统计；配一套黑白道具图标、标题悬停时的「墨入水」效果，支持暗色模式、站内搜索、代码高亮、数学公式，中英文界面开箱即用。
 
 **环境要求**：Node.js 22.12 及以上。
 

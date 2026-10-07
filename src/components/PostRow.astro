@@ -1,0 +1,144 @@
+---
+import { SITE } from '@/site.config';
+import { useStrings } from '@/i18n';
+import { BUCKET_TIER, excerpt, postUrl, readingBucket, readingTime, type Post } from '@/utils/posts';
+import ItemIcon from './ItemIcon.astro';
+
+interface Props {
+  post: Post;
+  /** Heading level for the title, so the outline stays valid under an h1 or an h2. */
+  level?: 2 | 3;
+}
+
+const { post, level = 3 } = Astro.props;
+const Heading = level === 2 ? 'h2' : 'h3';
+const t = useStrings(SITE.locale);
+const { date, category, pinned, draft } = post.data;
+const cat = (category && SITE.categoryIcons[category]) || SITE.categoryIcons.default;
+const day = date.toLocaleDateString(SITE.locale, { day: '2-digit', timeZone: 'UTC' }).replace(/\D/g, '');
+const month = date.toLocaleDateString(SITE.locale, { year: 'numeric', month: 'short', timeZone: 'UTC' });
+---
+
+<article class="post-row">
+  <time datetime={date.toISOString()}>
+    <b>{day}</b>
+    <span>{month}</span>
+  </time>
+  <div class="body">
+    <Heading class="title">
+      <a class="ink-title" href={postUrl(post)}>{post.data.title}</a>
+      {pinned && <span class="flag mono">{t.pinned}</span>}
+      {draft && <span class="flag mono">draft</span>}
+    </Heading>
+    <div class="meta mono">
+      {
+        category && (
+          <span>
+            <ItemIcon name={cat.icon} tier={cat.tier} size={18} />
+            {category}
+          </span>
+        )
+      }
+      <span>
+        <ItemIcon name="potion" tier={BUCKET_TIER[readingBucket(post)]} size={18} />
+        {t.minRead(readingTime(post.body ?? ''))}
+      </span>
+    </div>
+    <p>{excerpt(post)}</p>
+  </div>
+  <div class="cat" aria-hidden="true">
+    <ItemIcon name={cat.icon} tier={cat.tier} size={44} />
+  </div>
+</article>
+
+<style>
+  .post-row {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) 44px;
+    gap: 20px;
+    align-items: start;
+    padding-block: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  time {
+    padding-top: 6px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  time b {
+    display: block;
+    color: var(--text);
+    font-family: var(--font-serif);
+    font-size: 2.1rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(1.3rem, 2.4vw, 1.55rem);
+    font-weight: 600;
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+
+  .flag {
+    margin-left: 8px;
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-size: 0.65rem;
+    font-weight: 400;
+    vertical-align: middle;
+    text-transform: uppercase;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  p {
+    margin: 10px 0 0;
+    max-width: 38em;
+    color: var(--text-soft);
+  }
+
+  @media (max-width: 560px) {
+    .post-row {
+      grid-template-columns: minmax(0, 1fr) 36px;
+    }
+
+    time {
+      grid-column: 1 / -1;
+      padding-top: 0;
+    }
+
+    time b {
+      display: inline;
+      margin-right: 8px;
+      font-size: 1.5rem;
+    }
+
+    .cat :global(.item-icon) {
+      width: 36px;
+      height: 36px;
+    }
+  }
+</style>

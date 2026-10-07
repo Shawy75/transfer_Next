@@ -1,6 +1,8 @@
 ---
 import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
+import { withBase } from '@/utils/url';
+import Icon from './Icon.astro';
 
 const t = useStrings(SITE.locale);
 // Where the "Theme Sumi" credit links to. Turn the credit off with `showThemeCredit: false` in site.config.ts.
@@ -9,11 +11,30 @@ const year = new Date().getFullYear();
 const range = SITE.since && SITE.since < year ? `${SITE.since}–${year}` : `${year}`;
 ---
 
-<footer class="site-footer">
-  <p>© {range} {SITE.author.name}</p>
+<footer class="site-footer wrap">
+  <p class="mono">© {range} {SITE.author.name}</p>
+  {
+    SITE.social.length > 0 && (
+      <ul class="social">
+        {SITE.social.map((link) => (
+          <li>
+            <a
+              href={withBase(link.href)}
+              title={link.name}
+              aria-label={link.name}
+              rel={link.href.startsWith('http') ? 'me noopener' : undefined}
+              target={link.href.startsWith('http') ? '_blank' : undefined}
+            >
+              <Icon name={link.icon} size={17} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
   {
     SITE.showThemeCredit && (
-      <p class="credits">
+      <p class="credits mono">
         {t.poweredBy} <a href="https://astro.build" rel="noopener" target="_blank">Astro</a>{' '}
         <span aria-hidden="true">·</span>{' '}
         {t.themeBy} <a href={THEME_URL} rel="noopener" target="_blank">Sumi</a>
@@ -24,11 +45,16 @@ const range = SITE.since && SITE.since < year ? `${SITE.since}–${year}` : `${y
 
 <style>
   .site-footer {
-    padding: 2rem 1rem 2.5rem;
-    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+    margin-top: 64px;
+    padding-block: 28px 40px;
+    border-top: 1px solid var(--border);
     color: var(--muted);
-    font-size: 0.85rem;
-    line-height: 1.8;
+    font-size: 0.75rem;
   }
 
   .site-footer p {
@@ -44,5 +70,35 @@ const range = SITE.since && SITE.since < year ? `${SITE.since}–${year}` : `${y
 
   .site-footer a:hover {
     text-decoration-color: currentColor;
+  }
+
+  .social {
+    display: flex;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .social a {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .social a:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+
+  @media (max-width: 560px) {
+    .site-footer {
+      flex-direction: column;
+      text-align: center;
+    }
   }
 </style>

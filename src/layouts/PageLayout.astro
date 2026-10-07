@@ -4,6 +4,8 @@
  * Use it with `layout: ../layouts/PageLayout.astro` in the page's frontmatter.
  */
 import BaseLayout from './BaseLayout.astro';
+import { SITE } from '@/site.config';
+import { withBase } from '@/utils/url';
 
 interface Props {
   frontmatter: { title: string; description?: string };
@@ -13,7 +15,8 @@ const { title, description } = Astro.props.frontmatter;
 ---
 
 <BaseLayout title={title} description={description}>
-  <article class="card page-card">
+  <article class="page">
+    <img class="avatar" src={withBase(SITE.author.avatar)} alt={SITE.author.name} width="88" height="88" />
     <h1 class="page-title">{title}</h1>
     {description && <p class="page-subtitle">{description}</p>}
     <div class="prose">
@@ -21,3 +24,20 @@ const { title, description } = Astro.props.frontmatter;
     </div>
   </article>
 </BaseLayout>
+
+<style>
+  .page {
+    max-width: var(--prose-max);
+    margin-inline: auto;
+  }
+
+  .avatar {
+    display: block;
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    object-fit: cover;
+  }
+</style>

@@ -48,7 +48,7 @@ function render(nodes: Node[]): string {
 <style>
   .toc {
     position: relative;
-    max-height: calc(100vh - 12rem);
+    max-height: calc(100vh - 6rem);
     overflow-y: auto;
     font-size: 0.875rem;
     line-height: 1.5;
@@ -88,3 +88,63 @@ function render(nodes: Node[]): string {
     font-variant-numeric: tabular-nums;
   }
 </style>
+
+<script>
+  // Scroll-spy: highlight the entry for the section currently in view.
+  // A post can render the TOC twice (side rail + collapsible inline copy), so each id maps to several links.
+  const links = new Map<string, HTMLAnchorElement[]>();
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')) {
+    const id = link.dataset.tocLink!;
+    links.set(id, [...(links.get(id) ?? []), link]);
+  }
+  const headings = [...links.keys()]
+    .map((id) => document.getElementById(id))
+    .filter((el): el is HTMLElement => el !== null);
+
+  // Keep the active entry visible inside the TOC's own scroll box without moving the page.
+  const keepVisible = (link: HTMLAnchorElement) => {
+    const box = link.closest<HTMLElement>('.toc');
+    if (!box || box.offsetParent === null || box.scrollHeight <= box.clientHeight) return;
+    const top = link.offsetTop; // .toc is position: relative, so this is relative to the box
+    if (top < box.scrollTop || top > box.scrollTop + box.clientHeight - link.offsetHeight) {
+      box.scrollTop = top - box.clientHeight / 2;
+    }
+  };
+
+  if (headings.length) {
+    let activeId = '';
+    const update = () => {
+      let current = headings[0];
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top <= 96) current = heading;
+        else break;
+      }
+      // Short final sections can never reach the top, so treat "scrolled to the bottom" as the last one.
+      const root = document.documentElement;
+      if (window.scrollY > 0 && window.innerHeight + window.scrollY >= root.scrollHeight - 2) {
+        current = headings[headings.length - 1];
+      }
+      if (current.id === activeId) return;
+      for (const link of links.get(activeId) ?? []) link.classList.remove('active');
+      for (const link of links.get(current.id) ?? []) {
+        link.classList.add('active');
+        keepVisible(link);
+      }
+      activeId = current.id;
+    };
+    let ticking = false;
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          update();
+          ticking = false;
+        });
+      },
+      { passive: true },
+    );
+    update();
+  }
+</script>
