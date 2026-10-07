@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>墨迹 · 水墨云图</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: NexT-style quiet column — centred title and intro, a game-style item box, then the writing. */
+  :root {
+    --paper: #ebeae5;      /* cool rice paper */
+    --paper-2: #e1e0da;
+    --paper-hi: #f7f6f2;   /* light item fill */
+    --ink: #17181b;
+    --ink-2: #46484c;
+    --ink-3: #7e8083;
+    --line: #c8c7c0;
+    --seal: #b3261e;       /* cinnabar seal */
+    --smoke: var(--seal);  /* hover ink colour; set to var(--ink) for black ink */
+    --on-seal: #f7f6f2;
+
+    --f-serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+    --f-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    --wrap: 1040px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101113; --paper-2: #18191c; --paper-hi: #24252a;
+      --ink: #e7e5df; --ink-2: #b2b0aa; --ink-3: #7a7974; --line: #2c2d31;
+      --seal: #d8473a; --on-seal: #101113;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #101113; --paper-2: #18191c; --paper-hi: #24252a;
+    --ink: #e7e5df; --ink-2: #b2b0aa; --ink-3: #7a7974; --line: #2c2d31;
+    --seal: #d8473a; --on-seal: #101113;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-sans);
+    font-size: 17px;
+    line-height: 1.7;
+    padding-inline: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--seal); outline-offset: 3px; }
+  .wrap { max-width: var(--wrap); margin-inline: auto; }
+  .mono { font-family: var(--f-mono); letter-spacing: 0.04em; }
+
+  /* ---------- Icon system (B/W item icons) ---------- */
+  .ico { display: block; overflow: visible; }
+  .ico .o  { stroke: var(--ink); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+  .ico .fl { fill: var(--paper-hi); }
+  .ico .fh { fill: url(#hatch); }
+  .ico .fd { fill: url(#dots); }
+  .ico .fs { fill: var(--ink); }
+  .ico .ln { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+  .ico .hi { fill: none; stroke: var(--paper-hi); stroke-width: 2.2; stroke-linecap: round; }
+  .ico .sh { fill: var(--ink); opacity: 0.14; }
+
+  /* ---------- Masthead ---------- */
+  .masthead { display: grid; justify-items: center; gap: 14px; padding-block: 72px 28px; text-align: center; }
+  .seal {
+    display: grid; grid-template-columns: 1fr 1fr; place-items: center;
+    width: 44px; height: 44px; padding: 5px; border-radius: 4px;
+    background: var(--seal); color: var(--on-seal);
+    font-family: var(--f-mono); font-size: 12px; font-weight: 500; line-height: 1;
+    transform: rotate(-4deg);
+    box-shadow: inset 0 0 0 2px var(--seal), inset 0 0 0 3.5px var(--on-seal);
+  }
+  .masthead h1 {
+    margin: 0; font-family: var(--f-serif);
+    font-size: clamp(44px, 8vw, 68px); font-weight: 600; line-height: 1.05; letter-spacing: -0.01em;
+  }
+  .tagline { margin: 0; font-size: 13px; color: var(--ink-3); text-transform: uppercase; }
+  .intro { margin: 6px 0 0; max-width: 34em; color: var(--ink-2); text-wrap: balance; }
+
+  nav { border-block: 1px solid var(--line); }
+  nav ul { display: flex; justify-content: center; gap: 2px; list-style: none; margin: 0; padding: 6px 0; flex-wrap: wrap; }
+  nav a, .theme-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 12px; border-radius: 4px; font-size: 15px; color: var(--ink-2);
+    border: 0; background: none; cursor: pointer;
+  }
+  nav a:hover, .theme-btn:hover { background: var(--paper-2); color: var(--ink); }
+  nav a[aria-current] { color: var(--ink); font-weight: 600; }
+  nav .ico { width: 22px; height: 22px; }
+
+  /* ---------- Section heads ---------- */
+  section.block { padding-block: 56px 0; }
+  .head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; }
+  .head h2 { margin: 0; font-family: var(--f-serif); font-size: 28px; font-weight: 600; line-height: 1; }
+  .head .mono { font-size: 12px; color: var(--ink-3); }
+  .head .rule { flex: 1; height: 1px; background: var(--line); align-self: center; }
+
+  /* ---------- Item box ---------- */
+  .itembox { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: stretch; }
+  .slots {
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px;
+    padding: 12px; background: var(--paper-2); border: 1px solid var(--line);
+    align-content: center;
+  }
+  .slot {
+    position: relative; aspect-ratio: 1; max-width: 100%;
+    display: grid; place-items: center;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 3px;
+    cursor: pointer; padding: 0;
+  }
+  .slot .ico { width: 62%; height: 62%; transition: transform .25s; }
+  .slot:hover .ico { transform: translateY(-2px) scale(1.06); }
+  .slot[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .qty { position: absolute; right: 5px; bottom: 2px; font-family: var(--f-mono); font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  /* Every item fills the same rows, so the panel never changes height. */
+  .desc {
+    display: grid; grid-template-rows: auto auto auto; align-content: start; gap: 12px;
+    border: 1px solid var(--line); background: var(--paper); padding: 18px 20px; min-width: 0;
+  }
+  .desc-top { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 14px; align-items: center; }
+  .desc-top .ico { width: 52px; height: 52px; }
+  .desc h3 { margin: 0; font-family: var(--f-serif); font-size: 21px; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .desc .sub { display: block; font-size: 11px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .desc p {
+    margin: 0; font-size: 15px; line-height: 1.6; color: var(--ink-2);
+    height: calc(1.6em * 3); overflow: hidden;
+  }
+  .desc dl { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 6px 12px; margin: 0; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 14px; }
+  .desc dt { color: var(--ink-3); font-family: var(--f-mono); font-size: 11px; padding-top: 3px; white-space: nowrap; }
+  .desc dd { margin: 0; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .swatch { width: 14px; height: 14px; flex-shrink: 0; border: 1.5px solid var(--ink); border-radius: 2px; }
+
+  /* ---------- Posts ---------- */
+  .posts { border-top: 1px solid var(--ink); }
+  .post {
+    display: grid; grid-template-columns: 96px minmax(0, 1fr) 44px; gap: 20px; align-items: start;
+    padding-block: 28px; border-bottom: 1px solid var(--line);
+  }
+  .post time { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); padding-top: 6px; font-variant-numeric: tabular-nums; }
+  .post time b { display: block; font-family: var(--f-serif); font-weight: 600; font-size: 34px; color: var(--ink); line-height: 1.1; letter-spacing: 0; }
+  .post h3 { margin: 0; font-family: var(--f-serif); font-size: clamp(21px, 2.4vw, 25px); font-weight: 600; line-height: 1.4; }
+  .post .meta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--ink-3); font-family: var(--f-mono); }
+  .post .meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .post .meta .ico { width: 18px; height: 18px; }
+  .post p { margin: 10px 0 0; color: var(--ink-2); font-size: 16px; max-width: 38em; }
+  .post .cat .ico { width: 44px; height: 44px; }
+
+  /* Ink dropped into water: a dense drop lands at the left edge,
+     then thins into drifting wisps that travel to the right under the title. */
+  @property --spread { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+  .post h3 a { position: relative; display: inline; z-index: 0; }
+  /* The layer is much larger than the title so the drifting ink never touches its clipped edge. */
+  .post h3 a::before, .post h3 a::after {
+    content: ''; position: absolute; z-index: -1; pointer-events: none;
+    left: -64px; right: -64px; top: -110%; bottom: -150%;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--spread) - 30%), transparent var(--spread));
+    mask-image: linear-gradient(90deg, #000 calc(var(--spread) - 30%), transparent var(--spread));
+    opacity: 0;
+    transition: --spread 0s .45s, opacity .45s;
+  }
+  /* Core: the drop and the small plume that follows it. Kept well inside the layer. */
+  .post h3 a::before {
+    background:
+      radial-gradient(ellipse 3.4% 10% at 12% 47%, color-mix(in srgb, var(--smoke) 80%, transparent), transparent 75%),
+      radial-gradient(ellipse 7% 13% at 15% 49%, color-mix(in srgb, var(--smoke) 46%, transparent), transparent 75%),
+      radial-gradient(ellipse 9% 10% at 26% 44%, color-mix(in srgb, var(--smoke) 30%, transparent), transparent 75%),
+      radial-gradient(ellipse 9% 11% at 35% 52%, color-mix(in srgb, var(--smoke) 26%, transparent), transparent 75%),
+      radial-gradient(ellipse 12% 10% at 51% 46%, color-mix(in srgb, var(--smoke) 19%, transparent), transparent 75%),
+      radial-gradient(ellipse 11% 10% at 66% 51%, color-mix(in srgb, var(--smoke) 13%, transparent), transparent 75%),
+      radial-gradient(ellipse 11% 9% at 80% 46%, color-mix(in srgb, var(--smoke) 8%, transparent), transparent 75%);
+    filter: url(#ink-water);
+  }
+  /* Haze: a fainter, softer cloud behind the plume for depth. */
+  .post h3 a::after {
+    background:
+      radial-gradient(ellipse 11% 14% at 17% 48%, color-mix(in srgb, var(--smoke) 16%, transparent), transparent 75%),
+      radial-gradient(ellipse 18% 12% at 45% 48%, color-mix(in srgb, var(--smoke) 11%, transparent), transparent 75%),
+      radial-gradient(ellipse 15% 11% at 72% 48%, color-mix(in srgb, var(--smoke) 7%, transparent), transparent 75%);
+    filter: url(#ink-haze);
+  }
+  .post:hover h3 a::before, .post h3 a:focus-visible::before,
+  .post:hover h3 a::after, .post h3 a:focus-visible::after {
+    --spread: 135%;
+    opacity: 1;
+    transition: --spread 2.8s cubic-bezier(.12,.62,.25,1), opacity .15s;
+  }
+
+  footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-block: 56px 40px; font-size: 12px; color: var(--ink-3); }
+
+  @media (max-width: 860px) {
+    .itembox { grid-template-columns: minmax(0, 1fr); }
+    .slots { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .masthead { padding-block: 44px 20px; }
+    .post { grid-template-columns: minmax(0, 1fr) 36px; }
+    .post time { grid-column: 1 / -1; padding-top: 0; }
+    .post time b { display: inline; font-size: 24px; margin-right: 8px; }
+    .post .cat .ico { width: 36px; height: 36px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slot .ico { transition: none; }
+    .post:hover h3 a::before, .post:hover h3 a::after { transition: opacity .15s; --spread: 135%; }
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Fill patterns stand in for the colour tiers of game item icons. -->
+    <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="5" height="5" style="fill:var(--paper-hi)"/>
+      <line x1="0" y1="0" x2="0" y2="5" style="stroke:var(--ink);stroke-width:1.9"/>
+    </pattern>
+    <pattern id="dots" width="4.5" height="4.5" patternUnits="userSpaceOnUse">
+      <rect width="4.5" height="4.5" style="fill:var(--paper-hi)"/>
+      <circle cx="2.25" cy="2.25" r="1.05" style="fill:var(--ink)"/>
+    </pattern>
+    <!-- Turbulence pulls the soft ink blobs into wisps; the slow drift keeps them moving like water. -->
+    <filter id="ink-water" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.024" numOctaves="4" seed="4" result="noise">
+        <animate attributeName="baseFrequency" dur="12s" values="0.011 0.024;0.014 0.02;0.011 0.024" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="soft"/>
+      <feDisplacementMap in="soft" in2="noise" scale="38" xChannelSelector="R" yChannelSelector="G" result="wisp"/>
+      <feGaussianBlur in="wisp" stdDeviation="2.4"/>
+    </filter>
+    <filter id="ink-haze" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.016" numOctaves="2" seed="11" result="noise">
+        <animate attributeName="baseFrequency" dur="16s" values="0.008 0.016;0.01 0.013;0.008 0.016" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="50" xChannelSelector="G" yChannelSelector="R" result="wisp"/>
+      <feGaussianBlur in="wisp" stdDeviation="4"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="wrap masthead">
+  <span class="seal" aria-hidden="true"><span>S</span><span>U</span><span>M</span><span>I</span></span>
+  <h1>Sumi</h1>
+  <p class="tagline mono">Ink · Cloud · Notes</p>
+  <p class="intro">Notes on front-end craft, small tools, and the occasional landscape sketch. Updated slowly, written carefully.</p>
+</header>
+
+<nav class="wrap" aria-label="Main">
+  <ul id="nav"></ul>
+</nav>
+
+<main id="top">
+  <section class="block wrap" aria-labelledby="box-title">
+    <div class="head">
+      <h2 id="box-title">Item Box</h2>
+      <span class="mono">12 / 12</span>
+      <span class="rule"></span>
+    </div>
+    <div class="itembox">
+      <div class="slots" id="slots" role="group" aria-label="Site items"></div>
+      <aside class="desc" id="desc" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section class="block wrap" aria-labelledby="posts-title">
+    <div class="head">
+      <h2 id="posts-title">Latest</h2>
+      <span class="mono">04</span>
+      <span class="rule"></span>
+    </div>
+    <div class="posts" id="posts"></div>
+  </section>
+</main>
+
+<footer class="wrap mono">
+  <span>© 2025–2026 Sumi</span>
+  <span>Built with Astro · Theme Sumi</span>
+</footer>
+
+<script>
+(() => {
+  /* ================= Icons ================= */
+  // Original B/W item icons on a 48×48 grid. Fill tier = rarity: 0 blank, 1 dots, 2 hatch, 3 solid ink.
+  const TIER = ['fl', 'fd', 'fh', 'fs'];
+  const shadow = '<ellipse class="sh" cx="25" cy="44" rx="14" ry="2.6"/>';
+  const ICONS = {
+    scroll: (t = 0) => `${shadow}
+      <rect class="o ${TIER[t]}" x="10" y="12" width="28" height="24"/>
+      <path class="ln" d="M16 19h16M16 24h11M16 29h14"/>
+      <rect class="o fs" x="6" y="7" width="36" height="7" rx="3.5"/>
+      <rect class="o fs" x="6" y="34" width="36" height="7" rx="3.5"/>
+      <path class="hi" d="M10 10h8"/>`,
+    chest: (t = 2) => `${shadow}
+      <rect class="o ${TIER[t]}" x="7" y="21" width="34" height="19" rx="2"/>
+      <path class="o fl" d="M7 22v-5c0-4 3.5-7 8-7h18c4.5 0 8 3 8 7v5z"/>
+      <rect class="o fs" x="20.5" y="16" width="7" height="13" rx="1.5"/>
+      <circle cx="24" cy="23.5" r="1.6" style="fill:var(--paper-hi)"/>
+      <path class="hi" d="M12 14.5c1-1.6 2.4-2.3 4-2.3"/>`,
+    pouch: (t = 1) => `${shadow}
+      <path class="o ${TIER[t]}" d="M18 11h12l-2.5 6c7 2.6 11.5 9 11.5 15.5C39 39 33 42 24 42S9 39 9 32.5C9 26 13.5 19.6 20.5 17z"/>
+      <path class="o fs" d="M17.5 15.5h13" style="stroke-width:5"/>
+      <circle class="o fs" cx="30" cy="20" r="2.4"/>
+      <path class="ln" d="M30 22.5l2 6"/>`,
+    tag: (t = 0) => `${shadow}
+      <path class="ln" d="M24 17L17 5M24 17l7-12"/>
+      <path class="o ${TIER[t]}" d="M13 15h22v24a3 3 0 0 1-3 3H16a3 3 0 0 1-3-3z"/>
+      <circle class="o fs" cx="24" cy="20" r="2.6"/>
+      <path class="ln" d="M19 28h10M19 33h7"/>`,
+    brush: (t = 2) => `${shadow}
+      <g transform="rotate(-38 24 24)">
+        <rect class="o ${TIER[t]}" x="20.5" y="2" width="7" height="27" rx="2"/>
+        <rect class="o fs" x="19.5" y="28" width="9" height="4.5" rx="1"/>
+        <path class="o fs" d="M19.5 32.5h9c0 6-2 10.5-4.5 14-2.5-3.5-4.5-8-4.5-14z"/>
+        <path class="hi" d="M23 6v8"/>
+      </g>`,
+    spyglass: (t = 3) => `${shadow}
+      <g transform="rotate(-24 24 24)">
+        <rect class="o fs" x="3" y="19" width="12" height="10" rx="1.5"/>
+        <rect class="o fl" x="15" y="17" width="13" height="14" rx="1.5"/>
+        <rect class="o ${TIER[t]}" x="28" y="14" width="16" height="20" rx="2.5"/>
+        <path class="hi" d="M32 18h7"/>
+      </g>`,
+    potion: (t = 0) => `${shadow}
+      <path class="o ${TIER[t]}" d="M19.5 9h9v7.5c6.5 2.2 10.5 7.6 10.5 14.3C39 38 33.5 42 24 42S9 38 9 30.8c0-6.7 4-12.1 10.5-14.3z"/>
+      <rect class="o fs" x="18" y="4" width="12" height="6.5" rx="1.5"/>
+      <path class="${t === 3 ? 'hi' : 'ln'}" d="M14.5 29c.3-4.2 2.6-7.3 6-8.6" style="opacity:.9"/>`,
+    ore: (t = 2) => `${shadow}
+      <path class="o ${TIER[t]}" d="M7 32l6.5-15L24 10l12.5 5L41 29l-8 12H15z"/>
+      <path class="ln" d="M13.5 17L22 26l14.5-11M22 26l-3.5 15M22 26l19 3"/>
+      <path class="o fl" d="M24 10l-2 16-8.5-9z"/>`,
+    lantern: (t = 0) => `${shadow}
+      <path class="ln" d="M24 3v5"/>
+      <rect class="o fs" x="17" y="7.5" width="14" height="5" rx="1.5"/>
+      <ellipse class="o ${TIER[t]}" cx="24" cy="25.5" rx="13.5" ry="13"/>
+      <path class="ln" d="M24 12.5v26M17.5 14c-3.6 6.6-3.6 16.4 0 23M30.5 14c3.6 6.6 3.6 16.4 0 23"/>
+      <rect class="o fs" x="17" y="37.5" width="14" height="5" rx="1.5"/>
+      <path class="ln" d="M24 42.5v4"/>`,
+    horn: (t = 1) => `${shadow}
+      <path class="o ${TIER[t]}" d="M6 19.5c9 1 18-2 27-10.5l2.5 1V38L33 39c-9-8-18-10.5-27-9.5z"/>
+      <ellipse class="o fl" cx="35" cy="24" rx="5.5" ry="14.5"/>
+      <rect class="o fs" x="3" y="18" width="6" height="13" rx="2"/>
+      <path class="ln" d="M15 21v6.5M21 19.5v9"/>`,
+    sun: () => `<circle class="o fl" cx="24" cy="24" r="8"/><path class="ln" d="M24 6v6M24 36v6M6 24h6M36 24h6M11.3 11.3l4.2 4.2M32.5 32.5l4.2 4.2M11.3 36.7l4.2-4.2M32.5 15.5l4.2-4.2"/>`,
+  };
+  const svg = (name, tier) => `<svg class="ico" viewBox="0 0 48 48" aria-hidden="true">${ICONS[name](tier)}</svg>`;
+  const RARITY = [
+    ['Common', 'fl'], ['Rare', 'fd'], ['Epic', 'fh'], ['Legendary', 'fs'],
+  ];
+  const swatch = (t) => `<svg class="swatch" viewBox="0 0 14 14" aria-hidden="true"><rect width="14" height="14" class="${RARITY[t][1]}" style="fill:${t === 0 ? 'var(--paper-hi)' : t === 1 ? 'url(#dots)' : t === 2 ? 'url(#hatch)' : 'var(--ink)'}"/></svg>`;
+
+  /* ================= Nav ================= */
+  const NAV = [
+    ['scroll', 'Posts', true], ['chest', 'Archive'], ['pouch', 'Categories'], ['tag', 'Tags'], ['spyglass', 'Search'], ['brush', 'About'],
+  ];
+  document.getElementById('nav').innerHTML =
+    NAV.map(([i, label, cur]) => `<li><a href="#top"${cur ? ' aria-current="page"' : ''}>${svg(i)}${label}</a></li>`).join('') +
+    `<li><button class="theme-btn" type="button" id="theme" aria-label="Toggle dark mode">${svg('lantern')}<span id="theme-label">Night</span></button></li>`;
+
+  const root = document.documentElement;
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const syncThemeLabel = () => { document.getElementById('theme-label').textContent = isDark() ? 'Day' : 'Night'; };
+  document.getElementById('theme').addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    syncThemeLabel();
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncThemeLabel);
+  syncThemeLabel();
+
+  /* ================= Item box ================= */
+  // Every item has exactly two stats so the description panel keeps one height.
+  const ITEMS = [
+    { icon: 'scroll', tier: 0, name: 'Articles', kind: 'Writing', qty: 42,
+      text: 'Everything written so far. Open one, read it, put it back where you found it.', stats: [['Latest', 'Sep 28, 2026'], ['Words', '86,410']] },
+    { icon: 'chest', tier: 2, name: 'Archive', kind: 'Storage', qty: 6,
+      text: 'Old drafts sealed away by year. The further down you dig, the paler the ink.', stats: [['Years', '2021 – 2026'], ['Busiest', '2024 · 13 posts']] },
+    { icon: 'pouch', tier: 1, name: 'Categories', kind: 'Storage', qty: 5,
+      text: 'Posts of a kind, kept in the same pouch so they are easy to reach.', stats: [['Largest', 'Front-end · 17'], ['Smallest', 'Notes · 3']] },
+    { icon: 'tag', tier: 0, name: 'Tags', kind: 'Marker', qty: 17,
+      text: 'Small wooden tags hung on posts. A single post can carry several.', stats: [['Most used', 'Astro · CSS'], ['New', '2 this month']] },
+    { icon: 'spyglass', tier: 3, name: 'Search', kind: 'Tool', qty: null,
+      text: 'Full-text search that works offline. Makes distant words readable.', stats: [['Index', '42 posts'], ['Shortcut', 'Ctrl + K']] },
+    { icon: 'brush', tier: 2, name: 'About', kind: 'Author', qty: 1,
+      text: 'The hand holding the brush. Front-end engineer who paints a little on weekends.', stats: [['Based in', 'Hangzhou'], ['Contact', 'hello@example.com']] },
+    { icon: 'potion', tier: 0, name: 'Quick Read', kind: 'Consumable', qty: 21,
+      text: 'Posts under five minutes. Best taken on a commute.', stats: [['Length', '< 5 min'], ['Average', '3 min']] },
+    { icon: 'potion', tier: 1, name: 'Long Read', kind: 'Consumable', qty: 14,
+      text: 'Posts of five to fifteen minutes. Pair with a pot of tea.', stats: [['Length', '5 – 15 min'], ['Average', '9 min']] },
+    { icon: 'potion', tier: 3, name: 'Deep Read', kind: 'Consumable', qty: 7,
+      text: 'Posts over fifteen minutes. Clear your afternoon before use.', stats: [['Length', '> 15 min'], ['Longest', '42 min']] },
+    { icon: 'ore', tier: 2, name: 'Code Ore', kind: 'Material', qty: 128,
+      text: 'Code blocks mined from the posts. Highlighted, and copied with one click.', stats: [['Language', 'TypeScript'], ['Lines', '3,904']] },
+    { icon: 'lantern', tier: 0, name: 'Night Lantern', kind: 'Tool', qty: 1,
+      text: 'Light it to switch the page to night colours. Light it again to put it out.', stats: [['Default', 'Follows system'], ['Remembers', 'Your choice']] },
+    { icon: 'horn', tier: 1, name: 'Signal Horn', kind: 'Tool', qty: 1,
+      text: 'Blow it once and new posts arrive in your feed reader.', stats: [['Feed', '/rss.xml'], ['Format', 'RSS 2.0']] },
+  ];
+  const slots = document.getElementById('slots');
+  const desc = document.getElementById('desc');
+  slots.innerHTML = ITEMS.map((it, i) => `
+    <button class="slot" type="button" id="slot-${i}" data-i="${i}" aria-pressed="false" aria-label="${it.name}${it.qty ? ' ×' + it.qty : ''}">
+      ${svg(it.icon, it.tier)}
+      ${it.qty ? `<span class="qty">×${it.qty}</span>` : ''}
+    </button>`).join('');
+  let current = -1;
+  function select(i) {
+    i = Number(i);
+    if (i === current) return;
+    current = i;
+    const it = ITEMS[i];
+    slots.querySelectorAll('.slot').forEach((s) => s.setAttribute('aria-pressed', String(Number(s.dataset.i) === i)));
+    desc.innerHTML = `
+      <div class="desc-top">${svg(it.icon, it.tier)}
+        <div style="min-width:0"><h3>${it.name}</h3><span class="sub mono">${it.kind}${it.qty ? ' · Owned ' + it.qty : ''}</span></div>
+      </div>
+      <p>${it.text}</p>
+      <dl>
+        <dt>Rarity</dt><dd>${swatch(it.tier)}${RARITY[it.tier][0]}</dd>
+        ${it.stats.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}
+      </dl>`;
+  }
+  slots.addEventListener('click', (e) => { const b = e.target.closest('.slot'); if (b) select(b.dataset.i); });
+  slots.addEventListener('mouseover', (e) => { const b = e.target.closest('.slot'); if (b) select(b.dataset.i); });
+  slots.addEventListener('focusin', (e) => { const b = e.target.closest('.slot'); if (b) select(b.dataset.i); });
+  select(0);
+
+  /* ================= Posts ================= */
+  const POSTS = [
+    { d: '28', ym: 'Sep 2026', iso: '2026-09-28', title: 'Painting a breathing ink landscape with Canvas', cat: ['brush', 2, 'Graphics'], read: [1, 12],
+      text: 'Distant ridges come from noise, near ones from layered gradients. A walk through each layer, and how to keep it at 60 fps on a cheap phone.' },
+    { d: '17', ym: 'Sep 2026', iso: '2026-09-17', title: 'Black-and-white item icons: rules for a set', cat: ['pouch', 1, 'Design'], read: [0, 4],
+      text: 'Without colour, what tells a common item from a legendary one? Four fills — blank, dots, hatching, solid ink — and one shared outline.' },
+    { d: '02', ym: 'Aug 2026', iso: '2026-08-02', title: 'Astro 7’s new Markdown pipeline, the hard way', cat: ['ore', 2, 'Front-end'], read: [1, 8],
+      text: 'The default processor is now Sätteri, so remark plugins move into unified(). Also: why mismatched KaTeX styles broke every subscript.' },
+    { d: '19', ym: 'Jul 2026', iso: '2026-07-19', title: 'A month of writing code by the lake', cat: ['scroll', 0, 'Notes'], read: [3, 21],
+      text: 'Mist in the morning, components in the afternoon, line drawings of the day’s photos at night. Slowing down meant writing less code, and better.' },
+  ];
+  document.getElementById('posts').innerHTML = POSTS.map((p) => `
+    <article class="post">
+      <time datetime="${p.iso}"><b>${p.d}</b>${p.ym}</time>
+      <div style="min-width:0">
+        <h3><a href="#top">${p.title}</a></h3>
+        <div class="meta">
+          <span>${svg(p.cat[0], p.cat[1])}${p.cat[2]}</span>
+          <span>${svg('potion', p.read[0])}${p.read[1]} min</span>
+        </div>
+        <p>${p.text}</p>
+      </div>
+      <div class="cat" aria-hidden="true">${svg(p.cat[0], p.cat[1])}</div>
+    </article>`).join('');
+  document.addEventListener('click', (e) => { if (e.target.closest('a[href="#top"]')) e.preventDefault(); });
+})();
+</script>
+</body></html>

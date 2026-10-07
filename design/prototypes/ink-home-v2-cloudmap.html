@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>墨迹 · 水墨云图</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a hand scroll unrolled top to bottom — ink-landscape hero with a recon HUD, an item box, then the writing. */
+  :root {
+    --paper: #ebeae5;      /* cool rice paper */
+    --paper-2: #e1e0da;
+    --paper-hi: #f7f6f2;   /* highlight / light item fill */
+    --ink: #17181b;
+    --ink-2: #46484c;
+    --ink-3: #85878a;
+    --line: #c8c7c0;
+    --seal: #b3261e;       /* cinnabar seal */
+    --glow: #ffffff;       /* 流光 sheen */
+    --on-seal: #f7f6f2;
+
+    --f-brush: 'Ma Shan Zheng', 'STKaiti', 'KaiTi', serif;
+    --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    --wrap: 1120px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101113; --paper-2: #18191c; --paper-hi: #24252a;
+      --ink: #e7e5df; --ink-2: #b2b0aa; --ink-3: #74736f; --line: #2c2d31;
+      --seal: #d8473a; --on-seal: #101113; --glow: #f4f1e8;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #101113; --paper-2: #18191c; --paper-hi: #24252a;
+    --ink: #e7e5df; --ink-2: #b2b0aa; --ink-3: #74736f; --line: #2c2d31;
+    --seal: #d8473a; --on-seal: #101113; --glow: #f4f1e8;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-serif);
+    font-size: 16px;
+    line-height: 1.8;
+    padding-inline: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--seal); outline-offset: 3px; }
+  .wrap { max-width: var(--wrap); margin-inline: auto; }
+  .mono { font-family: var(--f-mono); letter-spacing: 0.04em; }
+
+  /* ---------- Icon system (B/W item icons) ---------- */
+  .ico { display: block; overflow: visible; }
+  .ico .o  { stroke: var(--ink); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+  .ico .fl { fill: var(--paper-hi); }
+  .ico .fh { fill: url(#hatch); }
+  .ico .fd { fill: url(#dots); }
+  .ico .fs { fill: var(--ink); }
+  .ico .ln { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+  .ico .hi { fill: none; stroke: var(--paper-hi); stroke-width: 2.2; stroke-linecap: round; }
+  .ico .sh { fill: var(--ink); opacity: 0.14; }
+
+  /* ---------- Top bar ---------- */
+  .bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-block: 18px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .seal {
+    display: grid; place-items: center;
+    width: 42px; height: 42px; border-radius: 4px;
+    background: var(--seal); color: var(--on-seal);
+    font-family: var(--f-brush); font-size: 17px; line-height: 1;
+    writing-mode: vertical-rl; letter-spacing: -1px;
+    transform: rotate(-4deg);
+    box-shadow: inset 0 0 0 2px var(--seal), inset 0 0 0 3.5px var(--on-seal);
+  }
+  .brand-name { font-family: var(--f-brush); font-size: 28px; line-height: 1; }
+  .brand-sub { font-size: 11px; color: var(--ink-3); }
+  nav ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+  nav a, .theme-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; border-radius: 4px; font-size: 14px; color: var(--ink-2);
+    border: 0; background: none; cursor: pointer;
+  }
+  nav a:hover, .theme-btn:hover { background: var(--paper-2); color: var(--ink); }
+  nav a[aria-current] { color: var(--ink); font-weight: 600; }
+  nav .ico { width: 22px; height: 22px; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    height: clamp(420px, 58vw, 560px);
+    border: 1px solid var(--line);
+    background: var(--paper);
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  .hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .hero-copy {
+    position: absolute; left: clamp(20px, 6vw, 72px); top: 50%; transform: translateY(-58%);
+    display: flex; align-items: flex-start; gap: clamp(14px, 3vw, 28px);
+    pointer-events: none;
+  }
+  .hero-title {
+    margin: 0;
+    font-family: var(--f-brush); font-weight: 400;
+    font-size: clamp(88px, 15vw, 176px); line-height: 0.95;
+    writing-mode: vertical-rl;
+    letter-spacing: 0.05em;
+  }
+  .hero-title span { display: inline-block; }
+  @keyframes bleed {
+    from { filter: blur(10px); opacity: .3; transform: scale(1.08); }
+    to   { filter: blur(0); opacity: 1; transform: none; }
+  }
+  .hero-side { display: flex; flex-direction: column; gap: 14px; padding-top: 10px; }
+  .hero-side p { margin: 0; max-width: 15em; font-size: clamp(14px, 1.6vw, 17px); color: var(--ink-2); text-wrap: balance; }
+  .hero-side .seal { width: 54px; height: 54px; font-size: 22px; }
+
+  /* recon HUD */
+  .hud { position: absolute; inset: 14px; pointer-events: none; font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+  .hud .c { position: absolute; width: 22px; height: 22px; border: 0 solid var(--ink-2); }
+  .hud .tl { top: 0; left: 0; border-top-width: 1.5px; border-left-width: 1.5px; }
+  .hud .tr { top: 0; right: 0; border-top-width: 1.5px; border-right-width: 1.5px; }
+  .hud .bl { bottom: 0; left: 0; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+  .hud .br { bottom: 0; right: 0; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+  .hud .tag-tl { position: absolute; top: 4px; left: 32px; }
+  .hud .tag-tr { position: absolute; top: 4px; right: 32px; text-align: right; }
+  .hud .tag-br { position: absolute; bottom: 4px; right: 32px; text-align: right; }
+  .hud .live { color: var(--seal); }
+  .hud .live::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--seal); vertical-align: 1px; animation: blink 1.2s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .hint { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 10px 0; font-size: 12px; color: var(--ink-3); }
+
+  /* ---------- Section heads ---------- */
+  section.block { padding-block: 64px 0; }
+  .head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; flex-wrap: wrap; }
+  .head h2 { margin: 0; font-family: var(--f-brush); font-weight: 400; font-size: 40px; line-height: 1; }
+  .head .mono { font-size: 12px; color: var(--ink-3); }
+  .head .rule { flex: 1; min-width: 40px; height: 1px; background: var(--line); align-self: center; }
+
+  /* ---------- Item box ---------- */
+  .itembox { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+  .slots {
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px;
+    padding: 12px; background: var(--paper-2); border: 1px solid var(--line);
+  }
+  .slot {
+    position: relative; aspect-ratio: 1; max-width: 100%;
+    display: grid; place-items: center;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 3px;
+    cursor: pointer; padding: 0;
+    transition: transform .15s, border-color .15s;
+  }
+  .slot .ico { width: 62%; height: 62%; transition: transform .25s; }
+  .slot:hover .ico { transform: translateY(-2px) scale(1.06); }
+  .slot[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .slot[aria-pressed="true"]::after {
+    content: ''; position: absolute; inset: -5px; border: 1.5px solid var(--seal); border-radius: 4px;
+    clip-path: polygon(0 0, 30% 0, 30% 3px, 3px 3px, 3px 30%, 0 30%, 0 70%, 3px 70%, 3px calc(100% - 3px), 30% calc(100% - 3px), 30% 100%, 70% 100%, 70% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 70%, 100% 70%, 100% 30%, calc(100% - 3px) 30%, calc(100% - 3px) 3px, 70% 3px, 70% 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .qty { position: absolute; right: 5px; bottom: 2px; font-family: var(--f-mono); font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .rank { position: absolute; left: 5px; top: 3px; font-family: var(--f-mono); font-size: 9px; color: var(--ink-3); }
+
+  .desc { border: 1px solid var(--line); background: var(--paper); padding: 18px 20px; min-width: 0; }
+  .desc-top { display: flex; gap: 14px; align-items: center; }
+  .desc-top .ico { width: 56px; height: 56px; flex-shrink: 0; }
+  .desc h3 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; }
+  .desc .mono { font-size: 11px; color: var(--ink-3); }
+  .desc p { margin: 14px 0 0; font-size: 14px; color: var(--ink-2); }
+  .desc dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 13px; }
+  .desc dt { color: var(--ink-3); font-family: var(--f-mono); font-size: 11px; padding-top: 2px; }
+  .desc dd { margin: 0; font-variant-numeric: tabular-nums; }
+  .desc a { color: var(--seal); }
+
+  .tiers { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 16px; font-size: 12px; color: var(--ink-3); }
+  .tiers span { display: flex; align-items: center; gap: 6px; }
+  .tiers .ico { width: 22px; height: 22px; }
+
+  /* ---------- Posts ---------- */
+  .posts { display: grid; gap: 0; border-top: 1px solid var(--ink); }
+  .post {
+    display: grid; grid-template-columns: 116px minmax(0, 1fr) 44px; gap: 20px; align-items: start;
+    padding-block: 26px; border-bottom: 1px solid var(--line);
+  }
+  .post time { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); padding-top: 8px; font-variant-numeric: tabular-nums; }
+  .post time b { display: block; font-family: var(--f-brush); font-weight: 400; font-size: 34px; color: var(--ink); line-height: 1.1; letter-spacing: 0; }
+  .post h3 { position: relative; display: inline; margin: 0; font-size: clamp(20px, 2.4vw, 25px); font-weight: 600; line-height: 1.5; }
+  .post h3 a {
+    background-image: radial-gradient(ellipse at center, var(--ink) 0 55%, transparent 72%);
+    background-repeat: no-repeat; background-size: 0% 46%; background-position: 0 92%;
+    transition: background-size .5s cubic-bezier(.3,.7,.2,1);
+    padding-inline: 2px;
+  }
+  .post:hover h3 a, .post h3 a:focus-visible { background-size: 100% 46%; }
+  :root .post:hover h3 a { opacity: 1; }
+  .post .meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--ink-3); font-family: var(--f-mono); }
+  .post .meta span { display: inline-flex; align-items: center; gap: 5px; }
+  .post .meta .ico { width: 18px; height: 18px; }
+  .post p { margin: 10px 0 0; color: var(--ink-2); font-size: 15px; max-width: 38em; }
+  .post .cat { width: 44px; height: 44px; padding-top: 4px; }
+  .post .cat .ico { width: 44px; height: 44px; }
+
+  footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-block: 56px 40px; font-size: 12px; color: var(--ink-3); }
+
+
+  /* 流光: a slow sheen across the calligraphy, the same light that runs along the ridges */
+  .hero-title span {
+    background: linear-gradient(105deg, var(--ink) 0 42%, var(--glow) 50%, var(--ink) 58% 100%);
+    background-size: 300% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: bleed 1.6s cubic-bezier(.2,.7,.2,1) both, sheen 7s 2s linear infinite;
+  }
+  .hero-title span:nth-child(2) { animation-delay: .35s, 2.6s; }
+  @keyframes sheen { from { background-position: 100% 0; } 30%, to { background-position: 0 0; } }
+
+  /* Black flash where a link is hit */
+  .ink-flash {
+    position: fixed; z-index: 50; width: 120px; height: 120px; margin: -60px 0 0 -60px; pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--ink) 0 18%, color-mix(in srgb, var(--ink) 45%, transparent) 40%, transparent 70%);
+    animation: flash .38s ease-out forwards;
+  }
+  @keyframes flash { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+
+  /* 两仪相生: switching day/night floods the page with the other ink from the lantern */
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+  ::view-transition-new(root) { animation: ink-flood .9s cubic-bezier(.6,.05,.3,1); }
+  @keyframes ink-flood {
+    from { clip-path: circle(0 at var(--vx, 90%) var(--vy, 4%)); }
+    to   { clip-path: circle(150vmax at var(--vx, 90%) var(--vy, 4%)); }
+  }
+
+  @media (max-width: 860px) {
+    .itembox { grid-template-columns: minmax(0, 1fr); }
+    .slots { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .post { grid-template-columns: minmax(0, 1fr) 36px; }
+    .post time { grid-column: 1 / -1; padding-top: 0; }
+    .post time b { display: inline; font-size: 24px; margin-right: 8px; }
+    .post .cat, .post .cat .ico { width: 36px; height: 36px; }
+    .hud .tag-tr { display: none; }
+    .brand-sub { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-title span, .hud .live::before { animation: none; }
+    .hero-title span { color: var(--ink); background: none; }
+    ::view-transition-new(root) { animation: none; }
+    .post h3 a, .slot .ico { transition: none; }
+  }
+</style>
+
+<!-- Shared fill patterns: hatching and dots stand in for the colour tiers of game item icons. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="5" height="5" style="fill:var(--paper-hi)"/>
+      <line x1="0" y1="0" x2="0" y2="5" style="stroke:var(--ink);stroke-width:1.9"/>
+    </pattern>
+    <pattern id="dots" width="4.5" height="4.5" patternUnits="userSpaceOnUse">
+      <rect width="4.5" height="4.5" style="fill:var(--paper-hi)"/>
+      <circle cx="2.25" cy="2.25" r="1.05" style="fill:var(--ink)"/>
+    </pattern>
+  </defs>
+</svg>
+
+<header class="wrap bar">
+  <a class="brand" href="#top" aria-label="墨迹 首页">
+    <span class="seal" aria-hidden="true">墨迹</span>
+    <span>
+      <span class="brand-name">墨迹</span><br>
+      <span class="brand-sub mono">INK · CLOUD · NOTES</span>
+    </span>
+  </a>
+  <nav aria-label="主导航">
+    <ul id="nav"></ul>
+  </nav>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <div class="hero" id="hero">
+      <canvas id="ink" aria-hidden="true"></canvas>
+      <div class="hud" aria-hidden="true">
+        <span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span>
+        <span class="tag-tl live" id="hud-state">讯号破译 · 待命</span>
+        <span class="tag-tr" id="coords">N 30°15′ E 120°10′</span>
+        <span class="tag-br" id="layer">数据流转 · 两仪相生</span>
+      </div>
+      <div class="hero-copy">
+        <h1 class="hero-title"><span>墨</span><span>迹</span></h1>
+        <div class="hero-side">
+          <p>写代码，也写山水。<br>一个慢慢更新的个人博客。</p>
+          <span class="seal" aria-hidden="true">两仪</span>
+        </div>
+      </div>
+    </div>
+    <div class="hint mono">
+      <span>移动鼠标留下墨迹 · 点击让墨猫扑过去，打一次水墨扫描</span>
+      <span>共 42 篇 · 最近更新 2026·09·28</span>
+    </div>
+  </div>
+
+  <section class="block wrap" aria-labelledby="box-title">
+    <div class="head">
+      <h2 id="box-title">物品栏</h2>
+      <span class="mono">ITEM BOX · 12 / 12</span>
+      <span class="rule"></span>
+    </div>
+    <div class="itembox">
+      <div class="slots" id="slots" role="group" aria-label="站点物品"></div>
+      <aside class="desc" id="desc" aria-live="polite"></aside>
+    </div>
+    <div class="tiers mono" aria-label="稀有度图例">
+      <span><svg class="ico" viewBox="0 0 48 48" data-icon="potion" data-tier="0"></svg>留白 · 普通</span>
+      <span><svg class="ico" viewBox="0 0 48 48" data-icon="potion" data-tier="1"></svg>网点 · 稀有</span>
+      <span><svg class="ico" viewBox="0 0 48 48" data-icon="potion" data-tier="2"></svg>斜线 · 珍贵</span>
+      <span><svg class="ico" viewBox="0 0 48 48" data-icon="potion" data-tier="3"></svg>浓墨 · 传说</span>
+    </div>
+  </section>
+
+  <section class="block wrap" aria-labelledby="posts-title">
+    <div class="head">
+      <h2 id="posts-title">近作</h2>
+      <span class="mono">LATEST · 04</span>
+      <span class="rule"></span>
+    </div>
+    <div class="posts" id="posts"></div>
+  </section>
+</main>
+
+<footer class="wrap mono">
+  <span>© 2025–2026 墨迹 · 以水墨为皮，以代码为骨</span>
+  <span>Built with Astro · Theme Sumi</span>
+</footer>
+
+<script>
+(() => {
+  /* ================= Icons ================= */
+  // Original B/W item icons on a 48×48 grid. Fill tier: 0 blank, 1 dots, 2 hatch, 3 solid ink.
+  const TIER = ['fl', 'fd', 'fh', 'fs'];
+  const shadow = '<ellipse class="sh" cx="25" cy="44" rx="14" ry="2.6"/>';
+  const ICONS = {
+    scroll: (t = 0) => `${shadow}
+      <rect class="o ${TIER[t]}" x="10" y="12" width="28" height="24"/>
+      <path class="ln" d="M16 19h16M16 24h11M16 29h14"/>
+      <rect class="o fs" x="6" y="7" width="36" height="7" rx="3.5"/>
+      <rect class="o fs" x="6" y="34" width="36" height="7" rx="3.5"/>
+      <path class="hi" d="M10 10h8"/>`,
+    chest: (t = 2) => `${shadow}
+      <rect class="o ${TIER[t]}" x="7" y="21" width="34" height="19" rx="2"/>
+      <path class="o fl" d="M7 22v-5c0-4 3.5-7 8-7h18c4.5 0 8 3 8 7v5z"/>
+      <rect class="o fs" x="20.5" y="16" width="7" height="13" rx="1.5"/>
+      <circle cx="24" cy="23.5" r="1.6" style="fill:var(--paper-hi)"/>
+      <path class="hi" d="M12 14.5c1-1.6 2.4-2.3 4-2.3"/>`,
+    pouch: (t = 1) => `${shadow}
+      <path class="o ${TIER[t]}" d="M18 11h12l-2.5 6c7 2.6 11.5 9 11.5 15.5C39 39 33 42 24 42S9 39 9 32.5C9 26 13.5 19.6 20.5 17z"/>
+      <path class="o fs" d="M17.5 15.5h13" style="stroke-width:5"/>
+      <circle class="o fs" cx="30" cy="20" r="2.4"/>
+      <path class="ln" d="M30 22.5l2 6"/>`,
+    tag: (t = 0) => `${shadow}
+      <path class="ln" d="M24 17L17 5M24 17l7-12"/>
+      <path class="o ${TIER[t]}" d="M13 15h22v24a3 3 0 0 1-3 3H16a3 3 0 0 1-3-3z"/>
+      <circle class="o fs" cx="24" cy="20" r="2.6"/>
+      <path class="ln" d="M19 28h10M19 33h7"/>`,
+    brush: (t = 2) => `${shadow}
+      <g transform="rotate(-38 24 24)">
+        <rect class="o ${TIER[t]}" x="20.5" y="2" width="7" height="27" rx="2"/>
+        <rect class="o fs" x="19.5" y="28" width="9" height="4.5" rx="1"/>
+        <path class="o fs" d="M19.5 32.5h9c0 6-2 10.5-4.5 14-2.5-3.5-4.5-8-4.5-14z"/>
+        <path class="hi" d="M23 6v8"/>
+      </g>`,
+    spyglass: (t = 3) => `${shadow}
+      <g transform="rotate(-24 24 24)">
+        <rect class="o fs" x="3" y="19" width="12" height="10" rx="1.5"/>
+        <rect class="o fl" x="15" y="17" width="13" height="14" rx="1.5"/>
+        <rect class="o ${TIER[t]}" x="28" y="14" width="16" height="20" rx="2.5"/>
+        <path class="hi" d="M32 18h7"/>
+      </g>`,
+    potion: (t = 0) => `${shadow}
+      <path class="o ${TIER[t]}" d="M19.5 9h9v7.5c6.5 2.2 10.5 7.6 10.5 14.3C39 38 33.5 42 24 42S9 38 9 30.8c0-6.7 4-12.1 10.5-14.3z"/>
+      <rect class="o fs" x="18" y="4" width="12" height="6.5" rx="1.5"/>
+      <path class="${t === 3 ? 'hi' : 'ln'}" d="M14.5 29c.3-4.2 2.6-7.3 6-8.6" style="opacity:.9"/>`,
+    ore: (t = 2) => `${shadow}
+      <path class="o ${TIER[t]}" d="M7 32l6.5-15L24 10l12.5 5L41 29l-8 12H15z"/>
+      <path class="ln" d="M13.5 17L22 26l14.5-11M22 26l-3.5 15M22 26l19 3"/>
+      <path class="o fl" d="M24 10l-2 16-8.5-9z"/>`,
+    lantern: (t = 0) => `${shadow}
+      <path class="ln" d="M24 3v5"/>
+      <rect class="o fs" x="17" y="7.5" width="14" height="5" rx="1.5"/>
+      <ellipse class="o ${TIER[t]}" cx="24" cy="25.5" rx="13.5" ry="13"/>
+      <path class="ln" d="M24 12.5v26M17.5 14c-3.6 6.6-3.6 16.4 0 23M30.5 14c3.6 6.6 3.6 16.4 0 23"/>
+      <rect class="o fs" x="17" y="37.5" width="14" height="5" rx="1.5"/>
+      <path class="ln" d="M24 42.5v4"/>`,
+    horn: (t = 1) => `${shadow}
+      <path class="o ${TIER[t]}" d="M6 19.5c9 1 18-2 27-10.5l2.5 1V38L33 39c-9-8-18-10.5-27-9.5z"/>
+      <ellipse class="o fl" cx="35" cy="24" rx="5.5" ry="14.5"/>
+      <rect class="o fs" x="3" y="18" width="6" height="13" rx="2"/>
+      <path class="ln" d="M15 21v6.5M21 19.5v9"/>`,
+    sun: () => `<circle class="o fl" cx="24" cy="24" r="8"/><path class="ln" d="M24 6v6M24 36v6M6 24h6M36 24h6M11.3 11.3l4.2 4.2M32.5 32.5l4.2 4.2M11.3 36.7l4.2-4.2M32.5 15.5l4.2-4.2"/>`,
+  };
+  const svg = (name, tier) => `<svg class="ico" viewBox="0 0 48 48" aria-hidden="true">${ICONS[name](tier)}</svg>`;
+
+  document.querySelectorAll('svg[data-icon]').forEach((el) => {
+    el.innerHTML = ICONS[el.dataset.icon](Number(el.dataset.tier ?? 0));
+  });
+
+  /* ================= Nav ================= */
+  const NAV = [
+    ['scroll', '文章', true], ['chest', '归档'], ['pouch', '分类'], ['tag', '标签'], ['spyglass', '搜索'], ['brush', '关于'],
+  ];
+  document.getElementById('nav').innerHTML =
+    NAV.map(([i, label, cur]) => `<li><a href="#top"${cur ? ' aria-current="page"' : ''}>${svg(i)}${label}</a></li>`).join('') +
+    `<li><button class="theme-btn" type="button" id="theme" aria-label="切换明暗">${svg('lantern')}<span id="theme-label">夜读</span></button></li>`;
+
+  const root = document.documentElement;
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  const syncThemeLabel = () => { document.getElementById('theme-label').textContent = isDark() ? '日读' : '夜读'; };
+  document.getElementById('theme').addEventListener('click', (e) => {
+    const flip = () => { root.dataset.theme = isDark() ? 'light' : 'dark'; syncThemeLabel(); };
+    const r = e.currentTarget.getBoundingClientRect();
+    root.style.setProperty('--vx', `${r.left + r.width / 2}px`);
+    root.style.setProperty('--vy', `${r.top + r.height / 2}px`);
+    if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.startViewTransition(flip);
+    else flip();
+  });
+  syncThemeLabel();
+
+  /* ================= Item box ================= */
+  const ITEMS = [
+    { icon: 'scroll', tier: 0, name: '文章', en: 'ARTICLE', qty: 42, rank: 'R1',
+      text: '记录在案的全部文字。打开即读，读完放回原处。', stats: [['最新', '2026·09·28'], ['总字数', '86,410']] },
+    { icon: 'chest', tier: 2, name: '归档', en: 'ARCHIVE', qty: 6, rank: 'R4',
+      text: '按年份封存的旧稿。越往下翻，墨色越淡。', stats: [['年份', '2021 – 2026'], ['最多', '2024 · 13 篇']] },
+    { icon: 'pouch', tier: 1, name: '分类', en: 'CATEGORY', qty: 5, rank: 'R2',
+      text: '把同类的文章收进一个袋子里，方便取用。', stats: [['最大', '前端 · 17 篇'], ['最小', '随笔 · 3 篇']] },
+    { icon: 'tag', tier: 0, name: '标签', en: 'TAG', qty: 17, rank: 'R1',
+      text: '挂在文章上的小木牌。一篇文章可以挂好几块。', stats: [['常用', 'Astro · CSS · 水墨'], ['新增', '本月 2 个']] },
+    { icon: 'spyglass', tier: 3, name: '搜索', en: 'SEARCH', qty: null, rank: 'R5',
+      text: '全文检索，离线可用。远处的字也能看清。', stats: [['索引', '42 篇 · 构建时生成'], ['快捷键', 'Ctrl + K']] },
+    { icon: 'brush', tier: 2, name: '关于', en: 'ABOUT', qty: 1, rank: 'R3',
+      text: '执笔的人。前端工程师，业余画两笔山水。', stats: [['所在', '杭州'], ['联系', 'hello@example.com']] },
+    { icon: 'potion', tier: 0, name: '速读药', en: 'SHORT READ', qty: 21, rank: 'R1',
+      text: '阅读时长 5 分钟以内。适合通勤路上服用。', stats: [['平均', '3 分钟']] },
+    { icon: 'potion', tier: 1, name: '长读药', en: 'LONG READ', qty: 14, rank: 'R2',
+      text: '阅读时长 5 到 15 分钟。建议配茶。', stats: [['平均', '9 分钟']] },
+    { icon: 'potion', tier: 3, name: '秘卷药', en: 'DEEP READ', qty: 7, rank: 'R5',
+      text: '阅读时长 15 分钟以上。服用前请清空日程。', stats: [['最长', '42 分钟']] },
+    { icon: 'ore', tier: 2, name: '代码矿', en: 'CODE BLOCK', qty: 128, rank: 'R3',
+      text: '文章里挖出来的代码块。自带高亮，一键复制。', stats: [['最多语言', 'TypeScript']] },
+    { icon: 'lantern', tier: 0, name: '夜读灯', en: 'DARK MODE', qty: 1, rank: 'R2',
+      text: '点亮后切换为夜间配色，再点一次熄灭。', stats: [['默认', '跟随系统']] },
+    { icon: 'horn', tier: 1, name: '订阅号角', en: 'RSS', qty: 1, rank: 'R2',
+      text: '吹响之后，新文章会送到你的阅读器里。', stats: [['地址', '/rss.xml']] },
+  ];
+  const slots = document.getElementById('slots');
+  const desc = document.getElementById('desc');
+  slots.innerHTML = ITEMS.map((it, i) => `
+    <button class="slot" type="button" id="slot-${i}" data-i="${i}" aria-pressed="false" aria-label="${it.name}${it.qty ? ' ×' + it.qty : ''}">
+      <span class="rank">${it.rank}</span>
+      ${svg(it.icon, it.tier)}
+      ${it.qty ? `<span class="qty">×${it.qty}</span>` : ''}
+    </button>`).join('');
+  function select(i) {
+    const it = ITEMS[i];
+    slots.querySelectorAll('.slot').forEach((s) => s.setAttribute('aria-pressed', String(s.dataset.i == i)));
+    desc.innerHTML = `
+      <div class="desc-top">${svg(it.icon, it.tier)}
+        <div><h3>${it.name}</h3><span class="mono">${it.en} · 稀有度 ${it.rank}${it.qty ? ' · 持有 ' + it.qty : ''}</span></div>
+      </div>
+      <p>${it.text}</p>
+      <dl>${it.stats.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
+  }
+  slots.addEventListener('click', (e) => { const b = e.target.closest('.slot'); if (b) select(b.dataset.i); });
+  slots.addEventListener('mouseover', (e) => { const b = e.target.closest('.slot'); if (b) select(b.dataset.i); });
+  select(0);
+
+  /* ================= Posts ================= */
+  const POSTS = [
+    { d: '28', ym: '2026·09', title: '用 Canvas 画一张会呼吸的水墨山水', cat: ['brush', 2, '图形'], read: [1, 12],
+      text: '远山用噪声生成，近处的墨用径向渐变叠加。这篇拆解首页这张图的每一层，以及怎么让它在低端手机上也跑满 60 帧。' },
+    { d: '17', ym: '2026·09', title: '把游戏物品图标改成黑白：一套图标的设计规则', cat: ['pouch', 1, '设计'], read: [0, 4],
+      text: '去掉颜色之后，靠什么区分稀有度？答案是留白、网点、斜线和浓墨四档填充，再加一条统一的粗描边。' },
+    { d: '02', ym: '2026·08', title: 'Astro 7 的新 Markdown 管线踩坑记', cat: ['ore', 2, '前端'], read: [1, 8],
+      text: '默认处理器换成了 Sätteri，remark 插件要搬到 unified() 里。顺带记录 KaTeX 样式版本不一致导致下标失效的问题。' },
+    { d: '19', ym: '2026·07', title: '在西湖边写了一个月代码', cat: ['scroll', 0, '随笔'], read: [3, 21],
+      text: '早上看雾，下午写组件，晚上把白天拍的照片描成线稿。慢下来以后，代码反而写得更少更好。' },
+  ];
+  document.getElementById('posts').innerHTML = POSTS.map((p) => `
+    <article class="post">
+      <time datetime="${p.ym.replace('·', '-')}-${p.d}"><b>${p.d}</b>${p.ym}</time>
+      <div style="min-width:0">
+        <h3><a href="#top">${p.title}</a></h3>
+        <div class="meta">
+          <span>${svg(p.cat[0], p.cat[1])}${p.cat[2]}</span>
+          <span>${svg('potion', p.read[0])}${p.read[1]} 分钟</span>
+        </div>
+        <p>${p.text}</p>
+      </div>
+      <div class="cat" aria-hidden="true">${svg(p.cat[0], p.cat[1])}</div>
+    </article>`).join('');
+
+  /* ================= Ink-cloud canvas (v2: 两仪 · 流光 · 猫跃扫描) ================= */
+  const hero = document.getElementById('hero');
+  const canvas = document.getElementById('ink');
+  const ctx = canvas.getContext('2d');
+  const hudState = document.getElementById('hud-state');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W = 0, H = 0, DPR = 1;
+  let C = {};
+
+  const readColors = () => {
+    const s = getComputedStyle(root);
+    const rgb = (v) => {
+      const h = s.getPropertyValue(v).trim().replace('#', '');
+      return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+    };
+    C = { ink: rgb('--ink'), paper: rgb('--paper'), seal: rgb('--seal'), glow: rgb('--glow') };
+  };
+  const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+  // Seeded value noise for mountain ridges.
+  const rand = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+  const lattice = Array.from({ length: 512 }, rand);
+  const noise = (x) => {
+    const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f);
+    return lattice[i & 511] * (1 - u) + lattice[(i + 1) & 511] * u;
+  };
+  const fbm = (x) => noise(x) * 0.6 + noise(x * 2.3 + 11) * 0.28 + noise(x * 5.1 + 37) * 0.12;
+
+  // White leads, black follows: light washes, only the nearest ridge carries real ink.
+  const LAYERS = [
+    { base: 0.44, amp: 0.26, freq: 0.0032, alpha: 0.07, speed: 0.004, par: 6 },
+    { base: 0.57, amp: 0.24, freq: 0.0045, alpha: 0.13, speed: 0.007, par: 12 },
+    { base: 0.7,  amp: 0.2,  freq: 0.006,  alpha: 0.24, speed: 0.011, par: 20 },
+    { base: 0.86, amp: 0.15, freq: 0.0085, alpha: 0.46, speed: 0.016, par: 32 },
+  ];
+  const MIST = Array.from({ length: 8 }, (_, i) => ({
+    x: rand(), y: 0.42 + rand() * 0.45, r: 0.18 + rand() * 0.22, v: 0.00002 + rand() * 0.00004, layer: i % 4,
+  }));
+  let T = 0, mx = 0.5, my = 0.5, hover = false, last = null;
+  const offsetOf = (L) => (mx - 0.5) * L.par * 8;
+  const ridgeY = (L, x) => H * (L.base - L.amp * Math.pow(fbm((x + offsetOf(L)) * L.freq + T * L.speed), 1.6));
+
+  const blots = [], rings = [], signals = [], flashes = [];
+
+  function resize() {
+    const r = hero.getBoundingClientRect();
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = r.width; H = r.height;
+    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function ridge(L) {
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W + 8; x += 6) ctx.lineTo(x, ridgeY(L, x));
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    const g = ctx.createLinearGradient(0, H * (L.base - L.amp), 0, H * Math.min(1, L.base + 0.16));
+    g.addColorStop(0, rgba(C.ink, L.alpha));
+    g.addColorStop(0.45, rgba(C.ink, L.alpha * 0.3));
+    g.addColorStop(1, rgba(C.ink, 0));
+    ctx.fillStyle = g;
+    ctx.fill();
+  }
+
+  // 流光: a sheen of light running along a ridge line, like the glow tracing the outfit.
+  function streak(L, now, period, delay) {
+    const p = ((now + delay) % period) / period;
+    const len = W * 0.22, head = p * (W + len * 2) - len;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.shadowColor = rgba(C.glow, 0.9);
+    ctx.shadowBlur = 10;
+    const steps = 28;
+    for (let i = 0; i < steps; i++) {
+      const x0 = head - (len * i) / steps, x1 = head - (len * (i + 1)) / steps;
+      if (x1 > W || x0 < 0) continue;
+      ctx.strokeStyle = rgba(C.glow, 0.95 * (1 - i / steps));
+      ctx.lineWidth = 2.2 * (1 - i / steps) + 0.4;
+      ctx.beginPath();
+      ctx.moveTo(x0, ridgeY(L, x0) + 0.5);
+      ctx.lineTo(x1, ridgeY(L, x1) + 0.5);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function mist(m, now) {
+    const x = ((m.x + now * m.v) % 1.4 - 0.2) * W;
+    const r = m.r * W;
+    const g = ctx.createRadialGradient(x, m.y * H, 0, x, m.y * H, r);
+    g.addColorStop(0, rgba(C.paper, 0.9));
+    g.addColorStop(1, rgba(C.paper, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(x, m.y * H, r, r * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function addBlot(x, y, size, splash) {
+    blots.push({ x, y, r: 2, max: size, life: 1, decay: 0.006 + Math.random() * 0.006 });
+    if (splash) {
+      for (let i = 0; i < 10; i++) {
+        const a = Math.random() * Math.PI * 2, d = size * (0.8 + Math.random() * 1.7);
+        blots.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, r: 1, max: 2 + Math.random() * 6, life: 1, decay: 0.008 });
+      }
+    }
+    if (blots.length > 240) blots.splice(0, blots.length - 240);
+  }
+
+  function drawBlots() {
+    for (let i = blots.length - 1; i >= 0; i--) {
+      const b = blots[i];
+      b.r += (b.max - b.r) * 0.06;  // ink soaking into paper
+      b.life -= b.decay;
+      if (b.life <= 0) { blots.splice(i, 1); continue; }
+      const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      const a = 0.5 * b.life;
+      g.addColorStop(0, rgba(C.ink, a));
+      g.addColorStop(0.65, rgba(C.ink, a * 0.5));
+      g.addColorStop(1, rgba(C.ink, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  /* ---- Snap scan: an ink ring spreads out; the dot-grid "cloud map" shows inside its band ---- */
+  const GRID = 10;
+  function startScan(x, y, now) {
+    rings.push({ x, y, t0: now });
+    hudState.textContent = '讯号破译 · 扫描中';
+    // Hidden signals the ring will reveal, each with a tracking trail.
+    for (let i = 0; i < 4; i++) {
+      const sx = W * (0.12 + rand() * 0.8), sy = H * (0.25 + rand() * 0.6);
+      const trail = [[sx, sy]];
+      let a = rand() * Math.PI * 2;
+      for (let k = 0; k < 6; k++) {
+        a += (rand() - 0.5) * 1.4;
+        const [px, py] = trail[trail.length - 1];
+        trail.push([px + Math.cos(a) * 26, py + Math.sin(a) * 18]);
+      }
+      signals.push({ x: sx, y: sy, trail, ring: rings[rings.length - 1], seen: 0, id: (0x10 + Math.floor(rand() * 0xef)).toString(16).toUpperCase() });
+    }
+  }
+
+  function drawRings(now) {
+    if (!rings.length) return;
+    // Ridge heights per grid column, computed once per frame.
+    const cols = Math.ceil(W / GRID) + 1;
+    const heights = LAYERS.map((L) => Array.from({ length: cols }, (_, c) => ridgeY(L, c * GRID)));
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const ring = rings[i];
+      const r = (now - ring.t0) * 0.5;
+      const maxR = Math.hypot(Math.max(ring.x, W - ring.x), Math.max(ring.y, H - ring.y)) + 80;
+      if (r > maxR) { rings.splice(i, 1); continue; }
+      const band = 80;
+      const x0 = Math.max(0, Math.floor((ring.x - r) / GRID)), x1 = Math.min(cols - 1, Math.ceil((ring.x + r) / GRID));
+      const y0 = Math.max(0, Math.floor((ring.y - r) / GRID)), y1 = Math.ceil(Math.min(H, ring.y + r) / GRID);
+      for (let gx = x0; gx <= x1; gx++) {
+        for (let gy = y0; gy <= y1; gy++) {
+          const px = gx * GRID + (gy % 2 ? GRID / 2 : 0), py = gy * GRID;
+          const d = r - Math.hypot(px - ring.x, py - ring.y);
+          if (d < 0 || d > band) continue;
+          let dens = 0;
+          for (let l = 0; l < LAYERS.length; l++) if (py > heights[l][gx]) dens = Math.max(dens, LAYERS[l].alpha);
+          const s = 0.7 + dens * 3.4;
+          ctx.fillStyle = rgba(C.ink, (0.1 + dens * 1.2) * (1 - d / band));
+          ctx.fillRect(px - s / 2, py - s / 2, s, s);
+        }
+      }
+      // Brushy ring edge: a few jittered strokes of uneven weight.
+      const fade = 1 - r / maxR;
+      for (let k = 0; k < 3; k++) {
+        ctx.strokeStyle = rgba(C.ink, (0.5 - k * 0.14) * fade);
+        ctx.lineWidth = 3.2 - k;
+        ctx.beginPath();
+        ctx.arc(ring.x, ring.y, Math.max(0.5, r - k * 4 + Math.sin(now / 90 + k) * 1.5), k * 0.7, Math.PI * 2 - 0.25 + k * 0.7);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawSignals(now) {
+    ctx.save();
+    ctx.font = '10px "IBM Plex Mono", monospace';
+    for (let i = signals.length - 1; i >= 0; i--) {
+      const s = signals[i];
+      if (!s.seen) {
+        const r = (now - s.ring.t0) * 0.5;
+        if (Math.hypot(s.x - s.ring.x, s.y - s.ring.y) <= r) s.seen = now;
+        else continue;
+      }
+      const age = (now - s.seen) / 3600;
+      if (age >= 1) { signals.splice(i, 1); continue; }
+      const a = age < 0.1 ? age * 10 : 1 - Math.max(0, age - 0.6) / 0.4;
+      const drawn = Math.min(s.trail.length, 1 + Math.floor(age * 30));
+      ctx.strokeStyle = rgba(C.seal, 0.8 * a);
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      s.trail.slice(0, drawn).forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = rgba(C.seal, a);
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y - 6); ctx.lineTo(s.x + 6, s.y); ctx.lineTo(s.x, s.y + 6); ctx.lineTo(s.x - 6, s.y); ctx.closePath();
+      ctx.fill();
+      ctx.fillText(`讯号 0x${s.id}`, s.x + 10, s.y - 8);
+    }
+    ctx.restore();
+    if (!rings.length && !signals.length && hudState.textContent !== '讯号破译 · 待命') hudState.textContent = '讯号破译 · 待命';
+  }
+
+  /* ---- The ink cat: perches on a ridge, leaps onto whatever you click ---- */
+  const CAT_LAYER = LAYERS[2];
+  const cat = { x: 0, y: 0, dir: -1, jump: null, home: 0.8 };
+  function drawCat(x, y, s, dir, squash) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(dir * (1 / squash), squash);
+    ctx.fillStyle = rgba(C.ink, 0.92);
+    ctx.strokeStyle = rgba(C.ink, 0.92);
+    ctx.beginPath(); ctx.ellipse(0, -s * 0.55, s * 0.6, s * 0.52, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.42, -s * 1.12, s * 0.38, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(s * 0.12, -s * 1.3); ctx.lineTo(s * 0.18, -s * 1.78); ctx.lineTo(s * 0.4, -s * 1.46);
+    ctx.moveTo(s * 0.48, -s * 1.46); ctx.lineTo(s * 0.7, -s * 1.76); ctx.lineTo(s * 0.76, -s * 1.28);
+    ctx.fill();
+    ctx.lineWidth = s * 0.2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-s * 0.5, -s * 0.35); ctx.quadraticCurveTo(-s * 1.25, -s * 0.6, -s * 0.95, -s * 1.3); ctx.stroke();
+    ctx.fillStyle = rgba(C.paper, 1);
+    ctx.beginPath(); ctx.arc(s * 0.58, -s * 1.16, s * 0.065, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  function updateCat(now) {
+    const s = Math.max(14, Math.min(22, W / 55));
+    if (cat.jump) {
+      const j = cat.jump, p = Math.min(1, (now - j.t0) / j.dur);
+      const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      cat.x = j.fx + (j.tx - j.fx) * e;
+      cat.y = j.fy + (j.ty - j.fy) * e - Math.sin(p * Math.PI) * j.h;
+      drawCat(cat.x, cat.y, s, cat.dir, 0.92 + Math.sin(p * Math.PI) * 0.12);
+      if (p === 1) { cat.jump = null; j.onLand?.(now); }
+      return;
+    }
+    if (cat.perched !== false) {
+      cat.x = cat.home * W;
+      cat.y = ridgeY(CAT_LAYER, cat.x) + 2;
+    }
+    drawCat(cat.x, cat.y, s, cat.dir, 1 + Math.sin(now / 420) * 0.015);
+  }
+  function leap(tx, ty, onLand) {
+    cat.dir = tx < cat.x ? -1 : 1;
+    const dist = Math.hypot(tx - cat.x, ty - cat.y);
+    cat.jump = { fx: cat.x, fy: cat.y, tx, ty, h: 40 + dist * 0.25, dur: 380 + dist * 0.5, t0: performance.now(), onLand };
+  }
+  function pounce(x, y) {
+    if (cat.jump) return;
+    cat.perched = false;
+    leap(x, y, (now) => {
+      flashes.push({ x, y, t0: now });   // black flash on contact
+      addBlot(x, y, 30 + Math.random() * 16, true);
+      startScan(x, y, now);
+      setTimeout(() => {
+        const hx = cat.home * W;
+        leap(hx, ridgeY(CAT_LAYER, hx) + 2, () => { cat.perched = true; cat.dir = -1; });
+      }, 900);
+    });
+  }
+  function drawFlashes(now) {
+    for (let i = flashes.length - 1; i >= 0; i--) {
+      const f = flashes[i], p = (now - f.t0) / 320;
+      if (p >= 1) { flashes.splice(i, 1); continue; }
+      const r = 20 + p * 70;
+      const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+      g.addColorStop(0, rgba(C.ink, 0.95 * (1 - p)));
+      g.addColorStop(0.5, rgba(C.ink, 0.5 * (1 - p)));
+      g.addColorStop(1, rgba(C.ink, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function crosshair() {
+    if (!hover || cat.jump) return;
+    const x = mx * W, y = my * H;
+    ctx.strokeStyle = rgba(C.ink, 0.28);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = rgba(C.seal, 0.9);
+    ctx.strokeRect(x - 9, y - 9, 18, 18);
+  }
+
+  let nextAuto = 2600;
+  function frame(now) {
+    T = now / 16;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = rgba(C.paper, 1);
+    ctx.fillRect(0, 0, W, H);
+    LAYERS.forEach((L, i) => {
+      ridge(L);
+      if (i === 1) streak(L, now, 6500, 0);
+      if (i === 3) streak(L, now, 8200, 3100);
+      MIST.filter((m) => m.layer === i).forEach((m) => mist(m, now));
+    });
+    drawRings(now);
+    drawBlots();
+    drawSignals(now);
+    updateCat(now);
+    drawFlashes(now);
+    crosshair();
+    // Idle: the cat snaps a scan from its perch every few seconds.
+    if (!reduce && now > nextAuto && !cat.jump && cat.perched !== false && !rings.length) {
+      startScan(cat.x, cat.y - 20, now);
+      nextAuto = now + 9000;
+    }
+  }
+  function loop(now) { frame(now); requestAnimationFrame(loop); }
+
+  hero.addEventListener('pointermove', (e) => {
+    const r = hero.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    mx = x / W; my = y / H; hover = true;
+    if (!last || Math.hypot(x - last.x, y - last.y) > 16) {
+      addBlot(x, y, 8 + Math.random() * 12, false);
+      last = { x, y };
+    }
+    document.getElementById('coords').textContent = `N ${(30 + my * 0.5).toFixed(2)}° E ${(120 + mx * 0.6).toFixed(2)}°`;
+  });
+  hero.addEventListener('pointerleave', () => { hover = false; last = null; });
+  hero.addEventListener('pointerdown', (e) => {
+    const r = hero.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    if (reduce) { addBlot(x, y, 34, true); startScan(x, y, performance.now()); return; }
+    pounce(x, y);
+    nextAuto = performance.now() + 9000;
+  });
+
+  readColors();
+  resize();
+  [[0.6, 0.3, 30], [0.66, 0.36, 14]].forEach(([x, y, s]) => addBlot(x * W, y * H, s, true));
+  new ResizeObserver(resize).observe(hero);
+  new MutationObserver(readColors).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); syncThemeLabel(); });
+
+  if (reduce) {
+    // Static frame, redrawn on interaction only.
+    blots.forEach((b) => { b.r = b.max; b.decay = 0; });
+    const still = () => frame(1200);
+    still();
+    ['pointermove', 'pointerdown', 'pointerleave'].forEach((ev) => hero.addEventListener(ev, () => requestAnimationFrame(still)));
+    new ResizeObserver(() => requestAnimationFrame(still)).observe(hero);
+    new MutationObserver(() => requestAnimationFrame(still)).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  } else {
+    requestAnimationFrame(loop);
+  }
+
+  /* ---- Black flash on demo links (the data-knife hit), instead of navigating ---- */
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href="#top"]');
+    if (!a) return;
+    e.preventDefault();
+    if (reduce) return;
+    const f = document.createElement('span');
+    f.className = 'ink-flash';
+    f.style.left = `${e.clientX}px`;
+    f.style.top = `${e.clientY}px`;
+    document.body.append(f);
+    f.addEventListener('animationend', () => f.remove());
+  });
+})();
+</script>
+</body></html>
