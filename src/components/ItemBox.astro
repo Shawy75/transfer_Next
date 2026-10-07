@@ -211,47 +211,94 @@ const swatch = (tier: Tier) =>
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
-    gap: 18px;
-    align-items: stretch;
+    gap: 28px;
+    align-items: center;
   }
 
   .slots {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     align-content: center;
-    gap: 8px;
-    padding: 12px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    gap: 14px;
   }
 
+  /* Each slot floats on the paper. Only transform and opacity animate, so hovering stays smooth. */
   .slot {
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
     position: relative;
     display: grid;
     place-items: center;
     aspect-ratio: 1;
     max-width: 100%;
     padding: 0;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border: 0;
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--lift-rest);
     cursor: pointer;
+    transition: transform 0.35s var(--ease);
+    will-change: transform;
+  }
+
+  /* The deeper hover shadow sits on a pseudo-element and fades in. */
+  .slot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: var(--lift-hover);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+    pointer-events: none;
+  }
+
+  /* A short accent stroke under the selected item. */
+  .slot::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    width: 18px;
+    height: 2px;
+    margin-left: -9px;
+    border-radius: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.35s var(--ease);
   }
 
   .slot :global(.item-icon) {
     width: 62%;
     height: 62%;
-    transition: transform 0.25s;
+    transition: transform 0.45s var(--ease);
   }
 
-  .slot:hover :global(.item-icon) {
-    transform: translateY(-2px) scale(1.06);
+  .slot:hover,
+  .slot[aria-pressed='true'] {
+    transform: translateY(-4px);
+  }
+
+  .slot:hover::before,
+  .slot[aria-pressed='true']::before {
+    opacity: 1;
   }
 
   .slot[aria-pressed='true'] {
-    border-color: var(--text);
-    box-shadow: inset 0 0 0 1px var(--text);
+    background: var(--paper-hi);
+  }
+
+  .slot[aria-pressed='true']::after {
+    transform: scaleX(1);
+  }
+
+  .slot:hover :global(.item-icon),
+  .slot[aria-pressed='true'] :global(.item-icon) {
+    transform: translateY(-2px) scale(1.08) rotate(-3deg);
+  }
+
+  .slot:active {
+    transform: translateY(-2px) scale(0.97);
+    transition-duration: 0.12s;
   }
 
   .qty {
@@ -268,8 +315,8 @@ const swatch = (tier: Tier) =>
     display: grid;
     min-width: 0;
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: 8px;
+    box-shadow: var(--lift-rest);
   }
 
   .card-item {
@@ -281,8 +328,20 @@ const swatch = (tier: Tier) =>
     padding: 18px 20px;
   }
 
+  .card-item {
+    transition:
+      opacity 0.25s ease,
+      transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
   .card-item:not([data-active]) {
     visibility: hidden;
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s ease,
+      visibility 0s 0.15s;
   }
 
   .top {
@@ -394,8 +453,16 @@ const swatch = (tier: Tier) =>
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .slot,
+    .slot::before,
+    .slot::after,
     .slot :global(.item-icon) {
       transition: none;
+    }
+
+    .slot:hover :global(.item-icon),
+    .slot[aria-pressed='true'] :global(.item-icon) {
+      transform: none;
     }
   }
 </style>

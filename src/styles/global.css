@@ -23,6 +23,9 @@
   --code-bg: #ffffff; /* pure white keeps the github-light-default palette above 4.5:1 contrast */
   --mark: #f6e7b0;
   --shadow: none;
+  /* Soft shadows for floating objects (item slots, cards). */
+  --lift-rest: 0 1px 1px rgb(23 24 27 / 0.05), 0 3px 8px -3px rgb(23 24 27 / 0.14);
+  --lift-hover: 0 2px 4px rgb(23 24 27 / 0.06), 0 14px 26px -8px rgb(23 24 27 / 0.28);
 
   --font-sans: 'Source Sans 3 Variable', 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
@@ -51,6 +54,8 @@
   --on-ink: #101113;
   --code-bg: #141517;
   --mark: #4a3f17;
+  --lift-rest: 0 1px 1px rgb(0 0 0 / 0.4), 0 3px 8px -3px rgb(0 0 0 / 0.6);
+  --lift-hover: 0 2px 4px rgb(0 0 0 / 0.4), 0 16px 30px -8px rgb(0 0 0 / 0.75);
 
   color-scheme: dark;
 }
