@@ -2,13 +2,16 @@
 import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
 import Icon from './Icon.astro';
+import { withBase } from '@/utils/url';
 
 const t = useStrings(SITE.locale);
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 
+const home = withBase('/').replace(/\/$/, '') || '/';
+
 function isActive(href: string): boolean {
-  const target = href.replace(/\/$/, '') || '/';
-  if (target === '/') return path === '/' || /^\/\d+$/.test(path);
+  const target = withBase(href).replace(/\/$/, '') || '/';
+  if (target === home) return path === home || new RegExp(`^${home === '/' ? '' : home}/\\d+$`).test(path);
   return path === target || path.startsWith(`${target}/`);
 }
 ---
@@ -16,7 +19,7 @@ function isActive(href: string): boolean {
 <header class="site-header card">
   <div class="brand">
     <div class="brand-text">
-      <a class="site-title" href="/">{SITE.title}</a>
+      <a class="site-title" href={withBase('/')}>{SITE.title}</a>
       <p class="site-subtitle">{SITE.subtitle}</p>
     </div>
     <div class="brand-actions">
@@ -43,7 +46,7 @@ function isActive(href: string): boolean {
       {
         SITE.nav.map((item) => (
           <li>
-            <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+            <a href={withBase(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>
               {item.icon && <Icon name={item.icon} size={16} />}
               <span>{item.text}</span>
             </a>
@@ -51,7 +54,7 @@ function isActive(href: string): boolean {
         ))
       }
       <li>
-        <a href="/search/" aria-current={isActive('/search/') ? 'page' : undefined}>
+        <a href={withBase('/search/')} aria-current={isActive('/search/') ? 'page' : undefined}>
           <Icon name="search" size={16} />
           <span>{t.search}</span>
         </a>
@@ -210,9 +213,16 @@ function isActive(href: string): boolean {
 <script>
   const header = document.querySelector<HTMLElement>('.site-header');
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  toggle?.addEventListener('click', () => {
-    const open = header?.toggleAttribute('data-open') ?? false;
-    toggle.setAttribute('aria-expanded', String(open));
+  const setOpen = (open: boolean) => {
+    header?.toggleAttribute('data-open', open);
+    toggle?.setAttribute('aria-expanded', String(open));
+  };
+  toggle?.addEventListener('click', () => setOpen(!header?.hasAttribute('data-open')));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && header?.hasAttribute('data-open')) {
+      setOpen(false);
+      toggle?.focus();
+    }
   });
 
   document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {

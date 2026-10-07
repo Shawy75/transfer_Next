@@ -12,15 +12,17 @@ import BackToTop from '@/components/BackToTop.astro';
 interface Props extends SeoProps {
   /** Headings for the sidebar table of contents (post pages only). */
   headings?: MarkdownHeading[];
+  /** Page language when it differs from the site locale. */
+  lang?: string;
 }
 
-const { headings, ...seo } = Astro.props;
+const { headings, lang, ...seo } = Astro.props;
 const t = useStrings(SITE.locale);
 const accentCss = `:root{--accent:${SITE.accent.light}}:root[data-theme='dark']{--accent:${SITE.accent.dark}}`;
 ---
 
 <!doctype html>
-<html lang={SITE.locale}>
+<html lang={lang ?? SITE.locale}>
   <head>
     <BaseHead {...seo} />
     <style is:inline set:html={accentCss}></style>

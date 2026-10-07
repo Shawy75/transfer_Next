@@ -10,11 +10,11 @@
   --surface-2: #f8f7f4;
   --text: #24221f;
   --text-soft: #4a4742;
-  --muted: #8a867f;
+  --muted: #6b675f;
   --border: #e6e3dc;
   --ink: #1d1c1a;
   --on-ink: #f5f3ee;
-  --code-bg: #f6f5f1;
+  --code-bg: #ffffff; /* pure white keeps the github-light-default palette above 4.5:1 contrast */
   --mark: #fdf1c7;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.04);
 
@@ -197,6 +197,18 @@ button {
   font-size: 1.0625rem;
   color: var(--text);
   overflow-wrap: break-word;
+}
+
+/* Underlined so links stay recognisable without relying on colour alone. */
+.prose a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.prose a:hover {
+  text-decoration-color: currentColor;
 }
 
 .prose > :first-child {

@@ -3,6 +3,7 @@ import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPosts, getTags } from '@/utils/posts';
+import { withBase } from '@/utils/url';
 
 const t = useStrings(SITE.locale);
 const tags = getTags(await getPosts()).sort((a, b) => a.name.localeCompare(b.name));
@@ -19,7 +20,7 @@ const size = (n: number) => (0.9 + (0.7 * (n - 1)) / Math.max(1, max - 1)).toFix
       {
         tags.map((tag) => (
           <li>
-            <a href={`/tags/${tag.slug}/`} style={`font-size:${size(tag.posts.length)}rem`}>
+            <a href={withBase(`/tags/${tag.slug}/`)} style={`font-size:${size(tag.posts.length)}rem`}>
               {tag.name}
               <sup>{tag.posts.length}</sup>
             </a>

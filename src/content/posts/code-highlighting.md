@@ -67,6 +67,6 @@ Pick any [Shiki theme](https://shiki.style/themes) in `astro.config.mjs`:
 
 ```js
 shikiConfig: {
-  themes: { light: 'github-light', dark: 'github-dark' },
+  themes: { light: 'github-light-default', dark: 'github-dark-default' },
 },
 ```

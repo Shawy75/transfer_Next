@@ -3,6 +3,7 @@ import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Icon from '@/components/Icon.astro';
+import { withBase } from '@/utils/url';
 
 const t = useStrings(SITE.locale);
 ---
@@ -12,7 +13,7 @@ const t = useStrings(SITE.locale);
     <p class="code">404</p>
     <h1 class="page-title">{t.notFoundTitle}</h1>
     <p class="page-subtitle">{t.notFoundText}</p>
-    <a class="btn" href="/"><Icon name="home" size={14} /> {t.backHome}</a>
+    <a class="btn" href={withBase('/')}><Icon name="home" size={14} /> {t.backHome}</a>
   </section>
 </BaseLayout>
 

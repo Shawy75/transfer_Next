@@ -45,6 +45,7 @@ const strings = {
     poweredBy: 'Powered by',
     themeBy: 'Theme',
     skipToContent: 'Skip to content',
+    noPosts: 'No posts yet. Add a Markdown file to src/content/posts/ to get started.',
   },
   'zh-CN': {
     readMore: '阅读全文',
@@ -88,6 +89,7 @@ const strings = {
     poweredBy: '由',
     themeBy: '主题',
     skipToContent: '跳到正文',
+    noPosts: '还没有文章。在 src/content/posts/ 里新建一个 Markdown 文件就能开始。',
   },
 } as const;
 

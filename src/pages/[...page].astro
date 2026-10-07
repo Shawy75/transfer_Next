@@ -6,6 +6,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import PostCard from '@/components/PostCard.astro';
 import Pagination from '@/components/Pagination.astro';
 import { getPosts, sortForHome, type Post } from '@/utils/posts';
+import { withBase } from '@/utils/url';
 
 export const getStaticPaths = (async ({ paginate }) => {
   const posts = sortForHome(await getPosts());
@@ -22,6 +23,16 @@ const title = page.currentPage > 1 ? t.page(page.currentPage, page.lastPage) : u
 ---
 
 <BaseLayout title={title}>
+  <h1 class="sr-only">{SITE.title}{title ? ` — ${title}` : ''}</h1>
+  {page.data.length === 0 && <p class="card page-card empty">{t.noPosts}</p>}
   {page.data.map((post) => <PostCard post={post} />)}
-  <Pagination current={page.currentPage} last={page.lastPage} href={(n) => (n === 1 ? '/' : `/${n}/`)} />
+  <Pagination current={page.currentPage} last={page.lastPage} href={(n) => withBase(n === 1 ? '/' : `/${n}/`)} />
 </BaseLayout>
+
+<style>
+  .empty {
+    margin: 0;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>

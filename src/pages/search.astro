@@ -9,7 +9,7 @@ const t = useStrings(SITE.locale);
 <BaseLayout title={t.search} noindex>
   <section class="card page-card">
     <h1 class="page-title">{t.search}</h1>
-    <div id="search" data-placeholder={t.searchPlaceholder}></div>
+    <div id="search" data-placeholder={t.searchPlaceholder} data-base={import.meta.env.BASE_URL}></div>
     <p class="unavailable" hidden data-search-unavailable>{t.searchUnavailable}</p>
   </section>
 </BaseLayout>
@@ -43,7 +43,8 @@ const t = useStrings(SITE.locale);
   };
 
   async function load() {
-    const base = '/pagefind/';
+    const siteBase = (container?.dataset.base ?? '/').replace(/\/?$/, '/');
+    const base = `${siteBase}pagefind/`;
     const css = document.createElement('link');
     css.rel = 'stylesheet';
     css.href = `${base}pagefind-ui.css`;
@@ -60,11 +61,13 @@ const t = useStrings(SITE.locale);
         showSubResults: true,
         showImages: false,
         resetStyles: false,
+        baseUrl: siteBase,
         translations: { placeholder: container.dataset.placeholder },
       });
       const query = new URLSearchParams(location.search).get('q');
       const input = container.querySelector<HTMLInputElement>('input');
       if (input) {
+        input.setAttribute('aria-label', container.dataset.placeholder ?? 'Search');
         if (query) {
           input.value = query;
           input.dispatchEvent(new Event('input'));

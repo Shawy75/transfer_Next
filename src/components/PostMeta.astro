@@ -4,6 +4,7 @@ import { useStrings } from '@/i18n';
 import { formatDate } from '@/utils/date';
 import { countWords, readingTime, slugify, type Post } from '@/utils/posts';
 import Icon from './Icon.astro';
+import { withBase } from '@/utils/url';
 
 interface Props {
   post: Post;
@@ -37,7 +38,7 @@ const showUpdated = detailed && updated && updated.toDateString() !== date.toDat
       <li>
         <Icon name="folder" size={14} />
         <span class="sr-only">{t.inCategory}</span>
-        <a href={`/categories/${slugify(category)}/`}>{category}</a>
+        <a href={withBase(`/categories/${slugify(category)}/`)}>{category}</a>
       </li>
     )
   }

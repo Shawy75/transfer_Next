@@ -94,17 +94,27 @@ const hasToc = SITE.toc.enable && headings.length > 0;
 
 <script>
   const sidebar = document.querySelector<HTMLElement>('[data-sidebar]');
-  const tabs = sidebar?.querySelectorAll<HTMLButtonElement>('[data-tab]') ?? [];
-  for (const tab of tabs) {
-    tab.addEventListener('click', () => {
-      for (const other of tabs) {
-        const selected = other === tab;
-        other.setAttribute('aria-selected', String(selected));
-        const panel = sidebar?.querySelector<HTMLElement>(`[data-panel="${other.dataset.tab}"]`);
-        if (panel) panel.hidden = !selected;
-      }
+  const tabs = [...(sidebar?.querySelectorAll<HTMLButtonElement>('[data-tab]') ?? [])];
+  const select = (tab: HTMLButtonElement) => {
+    for (const other of tabs) {
+      const selected = other === tab;
+      other.setAttribute('aria-selected', String(selected));
+      other.tabIndex = selected ? 0 : -1;
+      const panel = sidebar?.querySelector<HTMLElement>(`[data-panel="${other.dataset.tab}"]`);
+      if (panel) panel.hidden = !selected;
+    }
+  };
+  tabs.forEach((tab, i) => {
+    tab.tabIndex = tab.getAttribute('aria-selected') === 'true' ? 0 : -1;
+    tab.addEventListener('click', () => select(tab));
+    // Arrow keys move between tabs, as in a native tab list.
+    tab.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      select(next);
+      next.focus();
     });
-  }
+  });
 
   // Scroll-spy: highlight the TOC entry for the section currently in view.
   // A post can render the TOC twice (sidebar + inline on mobile), so each id maps to several links.

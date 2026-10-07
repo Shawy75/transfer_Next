@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { withBase } from './url';
 
 export type Post = CollectionEntry<'posts'>;
 
@@ -14,7 +15,7 @@ export function sortForHome(posts: Post[]): Post[] {
 }
 
 export function postUrl(post: Post): string {
-  return `/posts/${post.id}/`;
+  return withBase(`/posts/${post.id}/`);
 }
 
 /**
@@ -99,6 +100,19 @@ export function readingTime(markdown: string): number {
   const cjk = text.match(CJK)?.length ?? 0;
   const latin = text.replace(CJK, ' ').split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(latin / 220 + cjk / 400));
+}
+
+/**
+ * Language of a post: its `lang` frontmatter, otherwise 'zh-CN' when CJK characters
+ * outnumber Latin words, otherwise undefined (the site locale applies).
+ * Search uses this to split Chinese text into words correctly.
+ */
+export function postLang(post: Post): string | undefined {
+  if (post.data.lang) return post.data.lang;
+  const text = toPlainText(post.body ?? '');
+  const cjk = text.match(CJK)?.length ?? 0;
+  const latin = text.replace(CJK, ' ').split(/\s+/).filter(Boolean).length;
+  return cjk > latin ? 'zh-CN' : undefined;
 }
 
 export function excerpt(post: Post, length = 160): string {

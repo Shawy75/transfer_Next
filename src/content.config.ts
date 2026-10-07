@@ -20,6 +20,8 @@ const posts = defineCollection({
       image: z.union([image(), z.string()]).optional(),
       /** Set to false to hide the table of contents on this post. */
       toc: z.boolean().default(true),
+      /** Language of this post, e.g. 'en' or 'zh-CN'. Detected from the text when omitted. */
+      lang: z.string().optional(),
     }),
 });
 

@@ -22,6 +22,11 @@ export interface SocialLink {
 export interface SiteConfig {
   /** Final deployed URL, without a trailing slash. Used for canonical URLs, RSS and the sitemap. */
   url: string;
+  /**
+   * Sub-path the site is served from. Keep '/' for a site at the domain root.
+   * For a GitHub Pages project site (https://user.github.io/my-blog/) use '/my-blog'.
+   */
+  base: string;
   title: string;
   subtitle: string;
   /** Default meta description for pages that don't provide their own. */
@@ -57,10 +62,13 @@ export interface SiteConfig {
   since: number;
   /** License notice appended to each post. Set to false to hide it. */
   postLicense: { name: string; url: string } | false;
+  /** Show the small "Powered by Astro · Theme Sumi" line in the footer. */
+  showThemeCredit: boolean;
 }
 
 export const SITE: SiteConfig = {
   url: 'https://sumi-demo.example.com',
+  base: '/',
   title: 'Sumi',
   subtitle: 'Ink, paper, and quiet words',
   description: 'A clean, minimal blog built with the Sumi theme for Astro.',
@@ -93,4 +101,5 @@ export const SITE: SiteConfig = {
     name: 'CC BY-NC-SA 4.0',
     url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
   },
+  showThemeCredit: true,
 };

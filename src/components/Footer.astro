@@ -3,17 +3,23 @@ import { SITE } from '@/site.config';
 import { useStrings } from '@/i18n';
 
 const t = useStrings(SITE.locale);
+// Where the "Theme Sumi" credit links to. Turn the credit off with `showThemeCredit: false` in site.config.ts.
+const THEME_URL = 'https://github.com/Shawy75/transfer_Next';
 const year = new Date().getFullYear();
 const range = SITE.since && SITE.since < year ? `${SITE.since}–${year}` : `${year}`;
 ---
 
 <footer class="site-footer">
   <p>© {range} {SITE.author.name}</p>
-  <p class="credits">
-    {t.poweredBy} <a href="https://astro.build" rel="noopener" target="_blank">Astro</a>{' '}
-    <span aria-hidden="true">·</span>{' '}
-    {t.themeBy} <a href="https://github.com/Shawy75/transfer_Next" rel="noopener" target="_blank">Sumi</a>
-  </p>
+  {
+    SITE.showThemeCredit && (
+      <p class="credits">
+        {t.poweredBy} <a href="https://astro.build" rel="noopener" target="_blank">Astro</a>{' '}
+        <span aria-hidden="true">·</span>{' '}
+        {t.themeBy} <a href={THEME_URL} rel="noopener" target="_blank">Sumi</a>
+      </p>
+    )
+  }
 </footer>
 
 <style>
@@ -31,5 +37,12 @@ const range = SITE.since && SITE.since < year ? `${SITE.since}–${year}` : `${y
 
   .site-footer a {
     color: var(--text-soft);
+    text-decoration: underline;
+    text-decoration-color: var(--border);
+    text-underline-offset: 0.2em;
+  }
+
+  .site-footer a:hover {
+    text-decoration-color: currentColor;
   }
 </style>
